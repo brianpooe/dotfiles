@@ -1,0 +1,55 @@
+[user]
+name = Brian Pooe
+email = bria.method@gmail.com
+
+[color]
+ui = auto
+branch = auto
+status = auto
+diff = auto
+
+[alias]
+st = status
+ba = branch -va
+b = branch
+co = checkout
+cdiff = diff --cached
+df = diff
+ol = log --oneline
+lg = log -p
+hlog = !git log --pretty=format:\"%h - %an, %ar : %s\" --graph
+
+# all commits that aren't merges on all branches
+all = !git log --pretty=oneline --abbrev-commit --all --no-merges
+
+# all commits today for only me
+today = !git all --since='12am'
+pom = push origin main
+pos = push origin staging
+pod = push origin develop
+ pou = push origin uat
+ruo = remote update origin
+cma = commit --amend
+cmna = commit -n --amend
+del = branch -D
+cm = commit -m
+pf = push -f origin
+po = push origin
+rv = remote -v
+rao = remote add origin
+suo = remote set-url origin
+stash-s = stash save --keep-index --include-untracked
+stash-a = stash apply
+undo-commit = reset --soft HEAD~1
+stash-unapply = !git stash show -p | git apply -R
+del-local = "!f() { git branch | grep -v 'main' | xargs git branch -d; }; f"
+del-remote = git remote prune
+latest-tag = tag -l --sort=-version:refname
+back = !f() { git reset --soft HEAD~$1; }; f
+
+[push]
+default = matching
+
+[core]
+editor=nvim
+pager = less -x4
