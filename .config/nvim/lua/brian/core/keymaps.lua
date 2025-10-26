@@ -150,3 +150,5 @@ vim.keymap.set(
   ':source .session.vim<CR>',
   { noremap = true, silent = false }
 )
+-- Sort
+vim.keymap.set('v', '<leader>st', ':sort<CR>', { noremap = true })

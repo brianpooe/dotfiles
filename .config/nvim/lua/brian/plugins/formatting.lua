@@ -19,6 +19,7 @@ return {
         rust = { 'ast_grep' },
         python = { 'ruff', 'black' },
         csharp = { 'csharpier' },
+        dockerfile = { 'hadolint' },
       },
       format_on_save = {
         lsp_fallback = true,
