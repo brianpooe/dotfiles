@@ -36,18 +36,20 @@ config.background = {
 		source = {
 			File = "/Users/" .. os.getenv("USER") .. "/.config/wezterm/catalina-dark.jpg",
 		},
+		repeat_x = "Mirror",
 		hsb = {
-			brightness = 0.20, -- Visible but not overwhelming
-			saturation = 0.9,
+			brightness = 0.15,
+			saturation = 0.85,
 		},
+		attachment = { Parallax = 0.1 },
 	},
 	{
 		source = {
-			Color = "#2e3440", -- Nord background color for cohesion
+			Color = "#2e3440",
 		},
 		width = "100%",
 		height = "100%",
-		opacity = 0.50, -- Lighter overlay so transparency is visible
+		opacity = 0.50,
 	},
 }
 
