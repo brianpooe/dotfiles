@@ -18,44 +18,59 @@ config.enable_tab_bar = false
 config.font_size = 15.5
 config.font = wezterm.font("JetBrains Mono", { weight = "Regular" })
 config.bold_brightens_ansi_colors = true
+config.force_reverse_video_cursor = true
 
--- Color scheme
-config.color_scheme = "Nord (Gogh)"
+-- Kanagawa Wave color scheme
+config.colors = {
+	foreground = "#dcd7ba",
+	background = "#1f1f28",
+	cursor_bg = "#c8c093",
+	cursor_fg = "#c8c093",
+	cursor_border = "#c8c093",
+	selection_fg = "#c8c093",
+	selection_bg = "#2d4f67",
+	scrollbar_thumb = "#16161d",
+	split = "#54546d", -- Lighter for better split visibility
+
+	ansi = {
+		"#090618", -- black
+		"#c34043", -- red
+		"#76946a", -- green
+		"#c0a36e", -- yellow
+		"#7e9cd8", -- blue
+		"#957fb8", -- magenta
+		"#6a9589", -- cyan
+		"#c8c093", -- white
+	},
+	brights = {
+		"#727169", -- bright black
+		"#e82424", -- bright red
+		"#98bb6c", -- bright green
+		"#e6c384", -- bright yellow
+		"#7fb4ca", -- bright blue
+		"#938aa9", -- bright magenta
+		"#7aa89f", -- bright cyan
+		"#dcd7ba", -- bright white
+	},
+
+	indexed = {
+		[16] = "#ffa066",
+		[17] = "#ff5d62",
+	},
+}
 
 -- Window padding
 config.window_padding = {
-	left = 7,
-	right = 0,
-	top = 2,
-	bottom = 0,
+	left = 8,
+	right = 8,
+	top = 8,
+	bottom = 8,
 }
 
--- Background with better readability
-config.background = {
-	{
-		source = {
-			File = "/Users/" .. os.getenv("USER") .. "/.config/wezterm/catalina-dark.jpg",
-		},
-		repeat_x = "Mirror",
-		hsb = {
-			brightness = 0.15,
-			saturation = 0.85,
-		},
-		attachment = { Parallax = 0.1 },
-	},
-	{
-		source = {
-			Color = "#2e3440",
-		},
-		width = "100%",
-		height = "100%",
-		opacity = 0.50,
-	},
-}
-
--- Window transparency and blur - more noticeable
-config.window_background_opacity = 0.88
-config.macos_window_background_blur = 25
+-- Window transparency and blur
+config.window_background_opacity = 0.85
+config.macos_window_background_blur = 60
+config.text_background_opacity = 0.85
 
 -- Performance
 config.scrollback_lines = 10000
@@ -87,37 +102,31 @@ config.keys = {
 
 -- Hyperlink rules
 config.hyperlink_rules = {
-	-- Matches: a URL in parens: (URL)
 	{
 		regex = "\\((\\w+://\\S+)\\)",
 		format = "$1",
 		highlight = 1,
 	},
-	-- Matches: a URL in brackets: [URL]
 	{
 		regex = "\\[(\\w+://\\S+)\\]",
 		format = "$1",
 		highlight = 1,
 	},
-	-- Matches: a URL in curly braces: {URL}
 	{
 		regex = "\\{(\\w+://\\S+)\\}",
 		format = "$1",
 		highlight = 1,
 	},
-	-- Matches: a URL in angle brackets: <URL>
 	{
-		regex = "<(\\w+://\\w+://\\S+)>",
+		regex = "<(\\w+://\\S+)>",
 		format = "$1",
 		highlight = 1,
 	},
-	-- Then handle URLs not wrapped in brackets
 	{
-		regex = "[^(]\\b(\\w+://\\S+[)/a-zA-Z0-9-]+)",
+		regex = "[^(]\\b(\\w+://\\S+[)/a-zA-Z0.9-]+)",
 		format = "$1",
 		highlight = 1,
 	},
-	-- Implicit mailto link
 	{
 		regex = "\\b\\w+@[\\w-]+(\\.[\\w-]+)+\\b",
 		format = "mailto:$0",

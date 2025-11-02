@@ -147,6 +147,8 @@ noremap <leader>Y "+Y
 " Open file explorer
 noremap <silent> <leader>e :Lex<CR>
 
+" Make W w on save
+noremap :W :w
 
 " ========================================
 " Other

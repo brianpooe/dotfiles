@@ -152,3 +152,5 @@ vim.keymap.set(
 )
 -- Sort
 vim.keymap.set('v', '<leader>st', ':sort u<CR>', { noremap = true })
+-- Toggle case
+vim.keymap.set('v', '<leader>~', 'g~', { noremap = true })
