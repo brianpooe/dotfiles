@@ -70,6 +70,7 @@ return {
         'stylua',
         'vint',
         'yamlfmt',
+        'codelldb',
       },
       integrations = {
         ['mason-lspconfig'] = true,
