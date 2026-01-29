@@ -98,6 +98,11 @@ config.keys = {
 	{ key = "w", mods = "CTRL|SHIFT", action = wezterm.action.CloseCurrentPane({ confirm = false }) },
 	-- Zoom pane
 	{ key = "z", mods = "CTRL|SHIFT", action = wezterm.action.TogglePaneZoomState },
+	{
+		key = "f",
+		mods = "SHIFT|CTRL",
+		action = wezterm.action.ToggleFullScreen,
+	},
 }
 
 -- Hyperlink rules
