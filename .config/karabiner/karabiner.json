@@ -12,9 +12,29 @@
         },
         "rules": [
           {
-            "description": "Global: Swap Command and Control (except in terminals)",
+            "description": "Global: Rotate Modifiers (Ctrl→Opt, Opt→Cmd, Cmd→Ctrl)",
             "manipulators": [
               {
+                "description": "Map Left Control to Option (Alt)",
+                "conditions": [
+                  {
+                    "bundle_identifiers": [
+                      "^com\\.apple\\.Terminal$",
+                      "^com\\.googlecode\\.iterm2$",
+                      "^io\\.alacritty$",
+                      "^net\\.kovidgoyal\\.kitty$",
+                      "^com\\.github\\.wez\\.wezterm$",
+                      "^com\\.github\\.terminal$"
+                    ],
+                    "type": "frontmost_application_unless"
+                  }
+                ],
+                "from": { "key_code": "left_control" },
+                "to": [{ "key_code": "left_option" }],
+                "type": "basic"
+              },
+              {
+                "description": "Map Left Command to Control",
                 "conditions": [
                   {
                     "bundle_identifiers": [
@@ -33,6 +53,7 @@
                 "type": "basic"
               },
               {
+                "description": "Map Left Option to Command (Win)",
                 "conditions": [
                   {
                     "bundle_identifiers": [
@@ -46,11 +67,12 @@
                     "type": "frontmost_application_unless"
                   }
                 ],
-                "from": { "key_code": "left_control" },
+                "from": { "key_code": "left_option" },
                 "to": [{ "key_code": "left_command" }],
                 "type": "basic"
               },
               {
+                "description": "Map Right Command to Control (Symmetry)",
                 "conditions": [
                   {
                     "bundle_identifiers": [
@@ -69,6 +91,7 @@
                 "type": "basic"
               },
               {
+                "description": "Map Right Option to Command (Symmetry)",
                 "conditions": [
                   {
                     "bundle_identifiers": [
@@ -82,7 +105,7 @@
                     "type": "frontmost_application_unless"
                   }
                 ],
-                "from": { "key_code": "right_control" },
+                "from": { "key_code": "right_option" },
                 "to": [{ "key_code": "right_command" }],
                 "type": "basic"
               }
