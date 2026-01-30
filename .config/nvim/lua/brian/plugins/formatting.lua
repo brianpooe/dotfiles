@@ -1,6 +1,17 @@
 return {
   'stevearc/conform.nvim',
   event = { 'BufReadPre', 'BufNewFile' },
+  cmd = { 'ConformInfo' },
+  keys = {
+    {
+      '<leader>cf',
+      function()
+        require('conform').format { async = true, lsp_format = 'fallback' }
+      end,
+      mode = '',
+      desc = '[C]ode [F]ormat',
+    },
+  },
   config = function()
     local conform = require 'conform'
 
