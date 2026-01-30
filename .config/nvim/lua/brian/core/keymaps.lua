@@ -154,3 +154,8 @@ vim.keymap.set(
 vim.keymap.set('v', '<leader>st', ':sort u<CR>', { noremap = true })
 -- Toggle case
 vim.keymap.set('v', '<leader>~', 'g~', { noremap = true })
+
+-- Open terminal at bottom with height 10
+vim.keymap.set('n', '<leader>t', function()
+  vim.cmd 'botright 10split | terminal'
+end)
