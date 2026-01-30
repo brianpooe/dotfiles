@@ -36,6 +36,7 @@ return {
         'tsx',
         'css',
         'html',
+        'toml',
       },
 
       -- Autoinstall languages that are not installed
