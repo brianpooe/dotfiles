@@ -57,6 +57,11 @@ vim.lsp.inlay_hint.enable(true)
 local severity = vim.diagnostic.severity
 
 vim.diagnostic.config {
+  virtual_text = false, -- Disable inline diagnostics
+  float = {
+    border = 'rounded',
+    source = true, -- Show diagnostic source
+  },
   signs = {
     text = {
       [severity.ERROR] = ' ',
