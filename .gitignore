@@ -58,6 +58,7 @@ tags
 .config/*
 
 !.config/nvim/
+!.config/lazygit/
 !.config/starship/
 !.config/wezterm/
 !.config/karabiner/
