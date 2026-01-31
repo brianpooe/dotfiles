@@ -48,5 +48,29 @@ return {
       mode = 'n',
       desc = 'Show Noice Message History',
     },
+    {
+      '<C-j>',
+      function()
+        if not require('noice.lsp').scroll(4) then
+          return '<C-j>'
+        end
+      end,
+      mode = { 'n', 'i', 's' },
+      silent = true,
+      expr = true,
+      desc = 'Scroll hover docs down',
+    },
+    {
+      '<C-k>',
+      function()
+        if not require('noice.lsp').scroll(-4) then
+          return '<C-k>'
+        end
+      end,
+      mode = { 'n', 'i', 's' },
+      silent = true,
+      expr = true,
+      desc = 'Scroll hover docs up',
+    },
   },
 }

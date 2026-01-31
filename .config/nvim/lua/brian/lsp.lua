@@ -49,20 +49,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
       vim.lsp.buf.hover { border = 'rounded' }
     end, opts)
 
-    opts.desc = 'Scroll hover docs down'
-    keymap.set('n', '<C-j>', function()
-      if not require('noice.lsp').scroll(4) then
-        return '<C-j>'
-      end
-    end, { buffer = ev.buf, silent = true, expr = true })
-
-    opts.desc = 'Scroll hover docs up'
-    keymap.set('n', '<C-k>', function()
-      if not require('noice.lsp').scroll(-4) then
-        return '<C-k>'
-      end
-    end, { buffer = ev.buf, silent = true, expr = true })
-
     opts.desc = 'Restart LSP'
     keymap.set('n', '<leader>rs', ':LspRestart<CR>', opts) -- mapping to restart lsp if necessary
   end,
