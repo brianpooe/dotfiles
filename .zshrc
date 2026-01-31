@@ -53,6 +53,7 @@ alias ls="eza --no-filesize --long --color=always --icons=always --no-user"
 alias ll="eza -lah --group-directories-first --no-filesize --long --color=always --icons=always --no-user"
 alias lt="eza --tree --level"
 alias vim="nvim"
+alias crq="cargo run -q"
 
 if command -v tmux &>/dev/null && [ -z "$TMUX" ]; then
   tmux attach -t default 2>/dev/null || tmux new -s default
