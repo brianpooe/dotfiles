@@ -1,0 +1,6 @@
+keybinding:
+  universal:
+    scrollUpMain: '<c-k>'
+    scrollDownMain: '<c-j>'
+    scrollUpMain-alt1: '<pgup>'
+    scrollDownMain-alt1: '<pgdown>'
