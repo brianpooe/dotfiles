@@ -11,10 +11,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
     keymap.set('n', 'gR', '<cmd>Telescope lsp_references<CR>', opts) -- show definition, references
 
     opts.desc = 'Go to declaration'
-    keymap.set('n', 'gD', vim.lsp.buf.declaration, opts) -- go to declaration
+    keymap.set('n', 'gD', '<cmd>Telescope lsp_definitions<CR>', opts) -- go to declaration
 
     opts.desc = 'Show LSP definition'
-    keymap.set('n', 'gd', vim.lsp.buf.definition, opts) -- show lsp definition
+    keymap.set('n', 'gd', '<cmd>Telescope lsp_definitions<CR>', opts) -- show lsp definition
 
     opts.desc = 'Show LSP implementations'
     keymap.set('n', 'gi', '<cmd>Telescope lsp_implementations<CR>', opts) -- show lsp implementations
@@ -23,7 +23,12 @@ vim.api.nvim_create_autocmd('LspAttach', {
     keymap.set('n', 'gt', '<cmd>Telescope lsp_type_definitions<CR>', opts) -- show lsp type definitions
 
     opts.desc = 'See available code actions'
-    keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, opts) -- see available code actions, in visual mode will apply to selection
+    keymap.set(
+      { 'n', 'v' },
+      '<leader>ca',
+      '<cmd>Telescope lsp_type_definitions<CR>',
+      opts
+    ) -- see available code actions, in visual mode will apply to selection
 
     opts.desc = 'Smart rename'
     keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts) -- smart rename
@@ -45,8 +50,23 @@ vim.api.nvim_create_autocmd('LspAttach', {
     end, opts) -- jump to next diagnostic in buffer
 
     opts.desc = 'Show documentation for what is under cursor'
-    keymap.set('n', 'K', vim.lsp.buf.hover, opts) -- show documentation for what is under cursor
+    keymap.set('n', 'K', function()
+      vim.lsp.buf.hover { border = 'rounded' }
+    end, opts)
 
+    opts.desc = 'Scroll hover docs down'
+    keymap.set('n', '<C-j>', function()
+      if not require('noice.lsp').scroll(4) then
+        return '<C-j>'
+      end
+    end, { buffer = ev.buf, silent = true, expr = true })
+
+    opts.desc = 'Scroll hover docs up'
+    keymap.set('n', '<C-k>', function()
+      if not require('noice.lsp').scroll(-4) then
+        return '<C-k>'
+      end
+    end, { buffer = ev.buf, silent = true, expr = true })
     opts.desc = 'Restart LSP'
     keymap.set('n', '<leader>rs', ':LspRestart<CR>', opts) -- mapping to restart lsp if necessary
   end,
@@ -57,6 +77,11 @@ vim.lsp.inlay_hint.enable(true)
 local severity = vim.diagnostic.severity
 
 vim.diagnostic.config {
+  virtual_text = false, -- Disable inline diagnostics
+  float = {
+    border = 'rounded',
+    source = true, -- Show diagnostic source
+  },
   signs = {
     text = {
       [severity.ERROR] = ' ',
