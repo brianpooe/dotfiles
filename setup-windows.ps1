@@ -2,10 +2,9 @@
 # Dotfiles Setup Script for Windows (WSL Host Setup)
 # =============================================================================
 # This script prepares the Windows host for WSL-based dotfiles usage
-# - Installs WSL if not present
-# - Installs Windows Terminal
+# - Installs WezTerm terminal emulator
 # - Installs fonts (required on Windows host for WSL terminals)
-# - Installs WezTerm (optional terminal emulator)
+# - Installs Git (optional, for Windows-side operations)
 #
 # After running this script, run setup.sh inside your WSL distribution
 # =============================================================================
@@ -109,53 +108,13 @@ function Install-WingetPackage {
 }
 
 # =============================================================================
-# Install WSL
+# Install WezTerm
 # =============================================================================
 
-function Install-WSL {
-    Write-Header "Setting up Windows Subsystem for Linux (WSL)"
+function Install-WezTerm {
+    Write-Header "Installing WezTerm Terminal Emulator"
 
-    # Check if WSL is already installed
-    $wslStatus = wsl --status 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Success "WSL is already installed"
-
-        # List installed distributions
-        Write-Info "Installed WSL distributions:"
-        wsl --list --verbose
-        return
-    }
-
-    Write-Info "Installing WSL with Ubuntu (default)..."
-    Write-Warning "This may require a system restart"
-
-    try {
-        wsl --install
-        Write-Success "WSL installation initiated"
-        Write-Warning "Please restart your computer if prompted, then run this script again"
-    }
-    catch {
-        Write-Error "Failed to install WSL"
-        Write-Info "Try running: wsl --install"
-        Write-Info "Or enable WSL through Windows Features"
-    }
-}
-
-# =============================================================================
-# Install Terminal Emulators
-# =============================================================================
-
-function Install-Terminals {
-    Write-Header "Installing Terminal Emulators"
-
-    $packages = @(
-        @{ Id = "Microsoft.WindowsTerminal"; Name = "Windows Terminal" },
-        @{ Id = "wez.wezterm"; Name = "WezTerm" }
-    )
-
-    foreach ($pkg in $packages) {
-        Install-WingetPackage -PackageId $pkg.Id -PackageName $pkg.Name
-    }
+    Install-WingetPackage -PackageId "wez.wezterm" -PackageName "WezTerm"
 }
 
 # =============================================================================
@@ -228,14 +187,13 @@ function Show-PostInstallNotes {
     Write-Host "  3. Run the setup script inside WSL:" -ForegroundColor Cyan
     Write-Host "     cd ~/dotfiles && chmod +x setup.sh && ./setup.sh"
     Write-Host ""
-    Write-Host "  4. Configure your terminal (Windows Terminal or WezTerm):" -ForegroundColor Cyan
-    Write-Host "     - Set font to 'JetBrainsMono Nerd Font'"
-    Write-Host "     - Set default profile to your WSL distribution"
+    Write-Host "  4. Configure WezTerm:" -ForegroundColor Cyan
+    Write-Host "     - WezTerm will automatically use your WSL dotfiles config"
+    Write-Host "     - Font is already set to 'JetBrains Mono' in the config"
+    Write-Host "     - Default domain can be set to WSL in wezterm config"
     Write-Host ""
-    Write-Host "Windows Terminal settings location:" -ForegroundColor Yellow
-    Write-Host "  Settings > Profiles > Ubuntu > Appearance > Font face"
-    Write-Host ""
-    Write-Host "WezTerm will use your WSL dotfiles config automatically if configured." -ForegroundColor Yellow
+    Write-Host "WezTerm config location (symlinked from dotfiles):" -ForegroundColor Yellow
+    Write-Host "  ~/.config/wezterm/wezterm.lua"
     Write-Host ""
 }
 
@@ -250,7 +208,7 @@ function Main {
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if (-not $isAdmin) {
         Write-Warning "Running without administrator privileges."
-        Write-Warning "WSL installation and some font operations may fail."
+        Write-Warning "Some font operations may fail."
         Write-Info "Consider running this script as Administrator."
         Write-Host ""
     }
@@ -262,10 +220,9 @@ function Main {
     }
 
     # Install components
-    Install-WSL
-    Install-Git
-    Install-Terminals
+    Install-WezTerm
     Install-Fonts
+    Install-Git
 
     # Show next steps
     Show-PostInstallNotes
