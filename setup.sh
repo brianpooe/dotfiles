@@ -4,7 +4,7 @@
 # Dotfiles Setup Script
 # =============================================================================
 # This script installs all required dependencies before cloning/using dotfiles
-# Supports: macOS (Homebrew), Linux (Homebrew), Windows (winget via PowerShell)
+# Supports: macOS (Homebrew), Linux (Homebrew), WSL (Homebrew)
 # =============================================================================
 
 set -e
@@ -43,7 +43,14 @@ print_info() {
 detect_os() {
     case "$(uname -s)" in
         Darwin*)    OS="macos" ;;
-        Linux*)     OS="linux" ;;
+        Linux*)
+            # Check if running in WSL
+            if grep -qEi "(Microsoft|WSL)" /proc/version 2>/dev/null; then
+                OS="wsl"
+            else
+                OS="linux"
+            fi
+            ;;
         MINGW*|MSYS*|CYGWIN*)    OS="windows" ;;
         *)          OS="unknown" ;;
     esac
@@ -102,9 +109,8 @@ install_brew_packages() {
         "make"
     )
 
-    # Programming languages & runtimes
+    # Programming languages & runtimes (Node.js installed via NVM)
     local languages=(
-        "node"
         "python@3"
         "go"
         "rust"
@@ -366,6 +372,15 @@ print_post_install_notes() {
         echo "  - Configure Karabiner-Elements for keyboard remapping"
         echo "  - Import karabiner configuration from dotfiles"
     fi
+
+    if [[ "$OS" == "wsl" ]]; then
+        echo ""
+        echo "WSL-specific notes:"
+        echo "  - Install Windows Terminal from Microsoft Store for best experience"
+        echo "  - Install JetBrains Mono Nerd Font on Windows host for proper icons"
+        echo "  - WezTerm can be installed on Windows host and configured to use WSL"
+        echo "  - Fonts need to be installed on Windows, not inside WSL"
+    fi
 }
 
 # =============================================================================
@@ -379,16 +394,31 @@ main() {
     print_info "Detected operating system: $OS"
 
     case "$OS" in
-        macos|linux)
+        macos)
             install_homebrew
             install_brew_packages
-
-            if [[ "$OS" == "macos" ]]; then
-                install_brew_casks
-            else
-                install_linux_specific
-            fi
-
+            install_brew_casks
+            install_nvm
+            install_tpm
+            set_zsh_default
+            verify_installations
+            print_post_install_notes
+            ;;
+        linux)
+            install_homebrew
+            install_brew_packages
+            install_linux_specific
+            install_nvm
+            install_tpm
+            set_zsh_default
+            verify_installations
+            print_post_install_notes
+            ;;
+        wsl)
+            print_info "Running in Windows Subsystem for Linux (WSL)"
+            install_homebrew
+            install_brew_packages
+            install_linux_specific
             install_nvm
             install_tpm
             set_zsh_default
@@ -396,7 +426,9 @@ main() {
             print_post_install_notes
             ;;
         windows)
-            print_error "Please run setup-windows.ps1 for Windows installation"
+            print_error "Native Windows detected. Please run this script inside WSL."
+            print_info "To install WSL: wsl --install"
+            print_info "Then run this script from within your WSL distribution."
             exit 1
             ;;
         *)

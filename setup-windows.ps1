@@ -1,14 +1,17 @@
 # =============================================================================
-# Dotfiles Setup Script for Windows
+# Dotfiles Setup Script for Windows (WSL Host Setup)
 # =============================================================================
-# This script installs all required dependencies before cloning/using dotfiles
-# Uses: winget (Windows Package Manager)
-# Run as Administrator for best results
+# This script prepares the Windows host for WSL-based dotfiles usage
+# - Installs WSL if not present
+# - Installs Windows Terminal
+# - Installs fonts (required on Windows host for WSL terminals)
+# - Installs WezTerm (optional terminal emulator)
+#
+# After running this script, run setup.sh inside your WSL distribution
 # =============================================================================
 
 #Requires -Version 5.1
 
-# Set execution policy for this script
 $ErrorActionPreference = "Continue"
 
 # Colors and formatting
@@ -23,22 +26,22 @@ function Write-Header {
 
 function Write-Success {
     param([string]$Message)
-    Write-Host "✓ $Message" -ForegroundColor Green
+    Write-Host "[OK] $Message" -ForegroundColor Green
 }
 
 function Write-Warning {
     param([string]$Message)
-    Write-Host "⚠ $Message" -ForegroundColor Yellow
+    Write-Host "[!!] $Message" -ForegroundColor Yellow
 }
 
 function Write-Error {
     param([string]$Message)
-    Write-Host "✗ $Message" -ForegroundColor Red
+    Write-Host "[X] $Message" -ForegroundColor Red
 }
 
 function Write-Info {
     param([string]$Message)
-    Write-Host "→ $Message" -ForegroundColor Cyan
+    Write-Host "[-] $Message" -ForegroundColor Cyan
 }
 
 # =============================================================================
@@ -65,7 +68,6 @@ function Install-Winget {
 
     Write-Info "winget is not installed. Attempting to install..."
 
-    # Try to install via Microsoft Store (App Installer)
     try {
         Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
         Write-Success "winget installed successfully"
@@ -91,14 +93,12 @@ function Install-WingetPackage {
 
     Write-Info "Installing $PackageName..."
 
-    # Check if already installed
     $installed = winget list --id $PackageId 2>$null
     if ($LASTEXITCODE -eq 0 -and $installed -match $PackageId) {
         Write-Success "$PackageName is already installed"
         return
     }
 
-    # Install package
     winget install --id $PackageId --accept-source-agreements --accept-package-agreements --silent
     if ($LASTEXITCODE -eq 0) {
         Write-Success "$PackageName installed successfully"
@@ -108,14 +108,49 @@ function Install-WingetPackage {
     }
 }
 
-function Install-EssentialPackages {
-    Write-Header "Installing Essential Packages"
+# =============================================================================
+# Install WSL
+# =============================================================================
+
+function Install-WSL {
+    Write-Header "Setting up Windows Subsystem for Linux (WSL)"
+
+    # Check if WSL is already installed
+    $wslStatus = wsl --status 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Success "WSL is already installed"
+
+        # List installed distributions
+        Write-Info "Installed WSL distributions:"
+        wsl --list --verbose
+        return
+    }
+
+    Write-Info "Installing WSL with Ubuntu (default)..."
+    Write-Warning "This may require a system restart"
+
+    try {
+        wsl --install
+        Write-Success "WSL installation initiated"
+        Write-Warning "Please restart your computer if prompted, then run this script again"
+    }
+    catch {
+        Write-Error "Failed to install WSL"
+        Write-Info "Try running: wsl --install"
+        Write-Info "Or enable WSL through Windows Features"
+    }
+}
+
+# =============================================================================
+# Install Terminal Emulators
+# =============================================================================
+
+function Install-Terminals {
+    Write-Header "Installing Terminal Emulators"
 
     $packages = @(
-        @{ Id = "Git.Git"; Name = "Git" },
-        @{ Id = "Neovim.Neovim"; Name = "Neovim" },
-        @{ Id = "wez.wezterm"; Name = "WezTerm" },
-        @{ Id = "Starship.Starship"; Name = "Starship" }
+        @{ Id = "Microsoft.WindowsTerminal"; Name = "Windows Terminal" },
+        @{ Id = "wez.wezterm"; Name = "WezTerm" }
     )
 
     foreach ($pkg in $packages) {
@@ -123,59 +158,13 @@ function Install-EssentialPackages {
     }
 }
 
-function Install-ShellUtilities {
-    Write-Header "Installing Shell Utilities"
-
-    $packages = @(
-        @{ Id = "junegunn.fzf"; Name = "fzf (Fuzzy Finder)" },
-        @{ Id = "sharkdp.fd"; Name = "fd (File Finder)" },
-        @{ Id = "sharkdp.bat"; Name = "bat (Cat Alternative)" },
-        @{ Id = "eza-community.eza"; Name = "eza (ls Alternative)" },
-        @{ Id = "ajeetdsouza.zoxide"; Name = "zoxide (Smarter cd)" },
-        @{ Id = "JesseDuffield.lazygit"; Name = "lazygit (Git UI)" },
-        @{ Id = "BurntSushi.ripgrep.MSVC"; Name = "ripgrep (Search Tool)" },
-        @{ Id = "GnuWin32.Make"; Name = "Make (Build Tool)" }
-    )
-
-    foreach ($pkg in $packages) {
-        Install-WingetPackage -PackageId $pkg.Id -PackageName $pkg.Name
-    }
-}
-
-function Install-ProgrammingLanguages {
-    Write-Header "Installing Programming Languages & Runtimes"
-
-    $packages = @(
-        @{ Id = "OpenJS.NodeJS.LTS"; Name = "Node.js LTS" },
-        @{ Id = "Python.Python.3.12"; Name = "Python 3.12" },
-        @{ Id = "GoLang.Go"; Name = "Go" },
-        @{ Id = "Rustlang.Rustup"; Name = "Rust (rustup)" },
-        @{ Id = "DEVCOM.Lua"; Name = "Lua" }
-    )
-
-    foreach ($pkg in $packages) {
-        Install-WingetPackage -PackageId $pkg.Id -PackageName $pkg.Name
-    }
-}
-
-function Install-DevelopmentTools {
-    Write-Header "Installing Development Tools"
-
-    $packages = @(
-        @{ Id = "Microsoft.VisualStudio.2022.BuildTools"; Name = "Visual Studio Build Tools" },
-        @{ Id = "Kitware.CMake"; Name = "CMake" },
-        @{ Id = "LLVM.LLVM"; Name = "LLVM/Clang" }
-    )
-
-    foreach ($pkg in $packages) {
-        Install-WingetPackage -PackageId $pkg.Id -PackageName $pkg.Name
-    }
-}
+# =============================================================================
+# Install Fonts
+# =============================================================================
 
 function Install-Fonts {
-    Write-Header "Installing Fonts"
+    Write-Header "Installing Fonts (Required for terminal icons)"
 
-    # JetBrains Mono Nerd Font
     Write-Info "Installing JetBrains Mono Nerd Font..."
 
     $fontUrl = "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
@@ -184,23 +173,27 @@ function Install-Fonts {
 
     try {
         # Download font
+        Write-Info "Downloading font files..."
         Invoke-WebRequest -Uri $fontUrl -OutFile $zipFile -UseBasicParsing
 
         # Extract
+        Write-Info "Extracting font files..."
         Expand-Archive -Path $zipFile -DestinationPath $tempDir -Force
 
         # Install fonts
+        Write-Info "Installing fonts to system..."
         $fontsFolder = (New-Object -ComObject Shell.Application).Namespace(0x14)
-        Get-ChildItem -Path $tempDir -Filter "*.ttf" | ForEach-Object {
-            $fontPath = $_.FullName
-            $fontsFolder.CopyHere($fontPath, 0x10)
+        $fontFiles = Get-ChildItem -Path $tempDir -Filter "*.ttf"
+
+        foreach ($fontFile in $fontFiles) {
+            $fontsFolder.CopyHere($fontFile.FullName, 0x10)
         }
 
         # Cleanup
         Remove-Item -Path $zipFile -Force -ErrorAction SilentlyContinue
         Remove-Item -Path $tempDir -Recurse -Force -ErrorAction SilentlyContinue
 
-        Write-Success "JetBrains Mono Nerd Font installed"
+        Write-Success "JetBrains Mono Nerd Font installed ($($fontFiles.Count) files)"
     }
     catch {
         Write-Warning "Failed to install JetBrains Mono Nerd Font automatically"
@@ -208,103 +201,14 @@ function Install-Fonts {
     }
 }
 
-function Install-OptionalTools {
-    Write-Header "Installing Optional Tools"
-
-    $packages = @(
-        @{ Id = "Microsoft.WindowsTerminal"; Name = "Windows Terminal" },
-        @{ Id = "Microsoft.PowerShell"; Name = "PowerShell 7" },
-        @{ Id = "Docker.DockerDesktop"; Name = "Docker Desktop" }
-    )
-
-    foreach ($pkg in $packages) {
-        Install-WingetPackage -PackageId $pkg.Id -PackageName $pkg.Name
-    }
-}
-
 # =============================================================================
-# Install NVM for Windows
+# Install Git (for cloning dotfiles on Windows side if needed)
 # =============================================================================
 
-function Install-NvmWindows {
-    Write-Header "Installing NVM for Windows"
+function Install-Git {
+    Write-Header "Installing Git"
 
-    # Check if nvm is already installed
-    if (Get-Command nvm -ErrorAction SilentlyContinue) {
-        Write-Success "NVM for Windows is already installed"
-        return
-    }
-
-    Write-Info "Installing NVM for Windows..."
-    Install-WingetPackage -PackageId "CoreyButler.NVMforWindows" -PackageName "NVM for Windows"
-}
-
-# =============================================================================
-# Configure Environment
-# =============================================================================
-
-function Update-EnvironmentPath {
-    Write-Header "Updating Environment Path"
-
-    # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
-
-    Write-Success "Environment path updated"
-    Write-Info "You may need to restart your terminal for all changes to take effect"
-}
-
-# =============================================================================
-# Verify Installations
-# =============================================================================
-
-function Test-Installations {
-    Write-Header "Verifying Installations"
-
-    $tools = @(
-        @{ Command = "git"; Name = "Git" },
-        @{ Command = "nvim"; Name = "Neovim" },
-        @{ Command = "wezterm"; Name = "WezTerm" },
-        @{ Command = "starship"; Name = "Starship" },
-        @{ Command = "fzf"; Name = "fzf" },
-        @{ Command = "fd"; Name = "fd" },
-        @{ Command = "bat"; Name = "bat" },
-        @{ Command = "eza"; Name = "eza" },
-        @{ Command = "zoxide"; Name = "zoxide" },
-        @{ Command = "lazygit"; Name = "lazygit" },
-        @{ Command = "node"; Name = "Node.js" },
-        @{ Command = "python"; Name = "Python" },
-        @{ Command = "go"; Name = "Go" },
-        @{ Command = "rustc"; Name = "Rust" },
-        @{ Command = "cargo"; Name = "Cargo" }
-    )
-
-    $missing = @()
-
-    foreach ($tool in $tools) {
-        try {
-            $version = & $tool.Command --version 2>$null | Select-Object -First 1
-            if ($version) {
-                Write-Success "$($tool.Name): $version"
-            }
-            else {
-                throw "Not found"
-            }
-        }
-        catch {
-            Write-Error "$($tool.Name): not found"
-            $missing += $tool.Name
-        }
-    }
-
-    if ($missing.Count -gt 0) {
-        Write-Host ""
-        Write-Warning "Some tools were not found: $($missing -join ', ')"
-        Write-Info "You may need to restart your terminal or install them manually"
-    }
-    else {
-        Write-Host ""
-        Write-Success "All tools verified successfully!"
-    }
+    Install-WingetPackage -PackageId "Git.Git" -PackageName "Git"
 }
 
 # =============================================================================
@@ -312,43 +216,42 @@ function Test-Installations {
 # =============================================================================
 
 function Show-PostInstallNotes {
-    Write-Header "Post-Installation Notes"
+    Write-Header "Windows Host Setup Complete!"
 
-    Write-Host "Installation complete!" -ForegroundColor Green
+    Write-Host "Next steps:" -ForegroundColor Green
     Write-Host ""
-    Write-Host "Next steps:" -ForegroundColor Cyan
-    Write-Host "  1. Restart your terminal/PowerShell session"
-    Write-Host "  2. Clone your dotfiles repository"
-    Write-Host "  3. Copy/symlink configuration files to their proper locations:"
-    Write-Host "     - %LOCALAPPDATA%\nvim\         (Neovim)"
-    Write-Host "     - %USERPROFILE%\.config\wezterm\  (WezTerm)"
-    Write-Host "     - %USERPROFILE%\.config\starship.toml (Starship)"
+    Write-Host "  1. Open WSL (type 'wsl' in terminal or search for Ubuntu)" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "  4. Start Neovim and let plugins install automatically (via lazy.nvim)"
+    Write-Host "  2. Clone your dotfiles inside WSL:" -ForegroundColor Cyan
+    Write-Host "     git clone https://github.com/YOUR_USERNAME/dotfiles.git ~/dotfiles"
     Write-Host ""
-    Write-Host "Configure Starship in PowerShell profile:" -ForegroundColor Cyan
-    Write-Host '  Add to $PROFILE: Invoke-Expression (&starship init powershell)'
+    Write-Host "  3. Run the setup script inside WSL:" -ForegroundColor Cyan
+    Write-Host "     cd ~/dotfiles && chmod +x setup.sh && ./setup.sh"
     Write-Host ""
-    Write-Host "Configure zoxide in PowerShell profile:" -ForegroundColor Cyan
-    Write-Host '  Add to $PROFILE: Invoke-Expression (& { (zoxide init powershell | Out-String) })'
+    Write-Host "  4. Configure your terminal (Windows Terminal or WezTerm):" -ForegroundColor Cyan
+    Write-Host "     - Set font to 'JetBrainsMono Nerd Font'"
+    Write-Host "     - Set default profile to your WSL distribution"
     Write-Host ""
-    Write-Host "Mason will automatically install LSP servers, formatters, and linters"
-    Write-Host "when you open Neovim for the first time."
+    Write-Host "Windows Terminal settings location:" -ForegroundColor Yellow
+    Write-Host "  Settings > Profiles > Ubuntu > Appearance > Font face"
+    Write-Host ""
+    Write-Host "WezTerm will use your WSL dotfiles config automatically if configured." -ForegroundColor Yellow
     Write-Host ""
 }
 
 # =============================================================================
-# Main Installation Flow
+# Main
 # =============================================================================
 
 function Main {
-    Write-Header "Dotfiles Setup Script for Windows"
+    Write-Header "Dotfiles Setup - Windows Host Preparation"
 
     # Check for administrator privileges
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if (-not $isAdmin) {
-        Write-Warning "Running without administrator privileges. Some installations may fail."
-        Write-Info "Consider running this script as Administrator for best results."
+        Write-Warning "Running without administrator privileges."
+        Write-Warning "WSL installation and some font operations may fail."
+        Write-Info "Consider running this script as Administrator."
         Write-Host ""
     }
 
@@ -358,18 +261,13 @@ function Main {
         exit 1
     }
 
-    # Install all packages
-    Install-EssentialPackages
-    Install-ShellUtilities
-    Install-ProgrammingLanguages
-    Install-DevelopmentTools
-    Install-NvmWindows
+    # Install components
+    Install-WSL
+    Install-Git
+    Install-Terminals
     Install-Fonts
-    Install-OptionalTools
 
-    # Update environment and verify
-    Update-EnvironmentPath
-    Test-Installations
+    # Show next steps
     Show-PostInstallNotes
 }
 
