@@ -88,6 +88,7 @@ install_brew_packages() {
     # Essential tools
     local essential_packages=(
         "git"
+        "stow"
         "neovim"
         "tmux"
         "zsh"
@@ -303,6 +304,7 @@ verify_installations() {
 
     local tools=(
         "git"
+        "stow"
         "nvim"
         "tmux"
         "zsh"
@@ -352,13 +354,19 @@ print_post_install_notes() {
     echo -e "${GREEN}Installation complete!${NC}\n"
 
     echo "Next steps:"
-    echo "  1. Clone your dotfiles repository"
-    echo "  2. Symlink or copy configuration files to their proper locations:"
-    echo "     - ~/.config/nvim/     (Neovim)"
-    echo "     - ~/.config/wezterm/  (WezTerm)"
-    echo "     - ~/.config/starship.toml (Starship)"
-    echo "     - ~/.tmux.conf        (Tmux)"
-    echo "     - ~/.zshrc            (Zsh)"
+    echo "  1. Clone your dotfiles repository to your home directory:"
+    echo "     git clone <your-repo> ~/dotfiles"
+    echo ""
+    echo "  2. Use GNU Stow to create symlinks (from ~/dotfiles directory):"
+    echo "     cd ~/dotfiles"
+    echo "     stow nvim      # Symlinks ~/.config/nvim"
+    echo "     stow wezterm   # Symlinks ~/.config/wezterm"
+    echo "     stow tmux      # Symlinks ~/.tmux.conf"
+    echo "     stow zsh       # Symlinks ~/.zshrc"
+    echo "     stow starship  # Symlinks ~/.config/starship.toml"
+    echo ""
+    echo "     Or stow all packages at once:"
+    echo "     stow */"
     echo ""
     echo "  3. Start Neovim and let plugins install automatically (via lazy.nvim)"
     echo "  4. Start tmux and press 'prefix + I' to install tmux plugins"
