@@ -12,6 +12,29 @@
         },
         "rules": [
           {
+            "description": "Desktop switching: Physical Ctrl+Win+Arrow → Ctrl+Arrow (Windows-style)",
+            "manipulators": [
+              {
+                "description": "Ctrl+Win+Left → Switch desktop left",
+                "from": {
+                  "key_code": "left_arrow",
+                  "modifiers": { "mandatory": ["left_command", "left_control"] }
+                },
+                "to": [{ "key_code": "left_arrow", "modifiers": ["left_control"] }],
+                "type": "basic"
+              },
+              {
+                "description": "Ctrl+Win+Right → Switch desktop right",
+                "from": {
+                  "key_code": "right_arrow",
+                  "modifiers": { "mandatory": ["left_command", "left_control"] }
+                },
+                "to": [{ "key_code": "right_arrow", "modifiers": ["left_control"] }],
+                "type": "basic"
+              }
+            ]
+          },
+          {
             "description": "Remap Caps Lock to Ctrl when held, Esc when tapped",
             "manipulators": [
               {
