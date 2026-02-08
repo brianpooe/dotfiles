@@ -11,7 +11,6 @@ return {
         'docker_compose_language_service',
         'dockerls',
         'emmet_language_server',
-        'emmet_ls',
         'eslint',
         'gopls',
         'graphql',
@@ -28,6 +27,10 @@ return {
         'ts_ls',
         'vimls',
         'yamlls',
+      },
+      -- don't auto-enable rust_analyzer; rustaceanvim manages it
+      automatic_enable = {
+        exclude = { 'rust_analyzer' },
       },
     },
     dependencies = {
