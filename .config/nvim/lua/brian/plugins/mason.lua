@@ -21,7 +21,6 @@ return {
         'marksman',
         'omnisharp',
         'pyright',
-        'rust_analyzer',
         'sqlls',
         'svelte',
         'tailwindcss',
