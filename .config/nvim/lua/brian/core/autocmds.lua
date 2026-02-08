@@ -1,3 +1,22 @@
+-- Command aliases for common shift-key typos
+local typos = {
+  ['W'] = 'w',
+  ['Wq'] = 'wq',
+  ['WQ'] = 'wq',
+  ['Wqa'] = 'wqa',
+  ['WQa'] = 'wqa',
+  ['WQA'] = 'wqa',
+  ['Wa'] = 'wa',
+  ['WA'] = 'wa',
+  ['Q'] = 'q',
+  ['Qa'] = 'qa',
+  ['QA'] = 'qa',
+}
+
+for typo, cmd in pairs(typos) do
+  vim.api.nvim_create_user_command(typo, cmd, { bang = true })
+end
+
 -- Highlight when yanking (copying) text
 --  Try it with `yap` in normal mode
 --  See `:help vim.hl.on_yank()`
