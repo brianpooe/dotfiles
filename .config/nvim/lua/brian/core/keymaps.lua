@@ -82,7 +82,7 @@ vim.keymap.set('n', '<leader>to', ':tabnew<CR>', opts) -- open new tab
 vim.keymap.set('n', '<leader>tx', ':tabclose<CR>', opts) -- close current tab
 vim.keymap.set('n', '<leader>tn', ':tabn<CR>', opts) --  go to next tab
 vim.keymap.set('n', '<leader>tp', ':tabp<CR>', opts) --  go to previous tab
-vim.keymap.set('n', '<leader>tc', ':tabonly<CR>', opts) -- close all tabs except current
+vim.keymap.set('n', '<leader>tc', ':BufferLineCloseOthers<CR>', opts) -- close all buffers except current
 
 -- Toggle line wrapping
 vim.keymap.set('n', '<leader>lw', '<cmd>set wrap!<CR>', opts)
