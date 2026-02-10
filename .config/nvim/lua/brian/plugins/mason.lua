@@ -18,10 +18,8 @@ return {
         'jsonls',
         'lua_ls',
         'marksman',
-        'omnisharp',
         'pyright',
         'sqlls',
-        'svelte',
         'tailwindcss',
         'terraformls',
         'ts_ls',
@@ -58,7 +56,6 @@ return {
       ensure_installed = {
         'ast_grep',
         'cbfmt',
-        'csharpier',
         'debugpy',
         'editorconfig-checker',
         'eslint_d',
