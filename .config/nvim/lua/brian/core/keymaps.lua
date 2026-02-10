@@ -26,7 +26,7 @@ vim.keymap.set(
 vim.keymap.set('n', '<Esc>', ':noh<CR>', opts)
 
 -- save file
-vim.keymap.set('n', '<C-s>', '<cmd> wa <CR>', opts)
+vim.keymap.set('n', '<leader>sa', '<cmd> wa <CR>', opts)
 
 -- save file without auto-formatting
 vim.keymap.set('n', '<leader>sn', '<cmd>noautocmd w <CR>', opts)
