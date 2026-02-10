@@ -37,12 +37,12 @@ return {
     }
 
     -- Import color theme based on environment variable NVIM_THEME
-    local env_var_nvim_theme = os.getenv 'NVIM_THEME' or 'nord'
+    local env_var_nvim_theme = os.getenv 'NVIM_THEME' or 'auto'
 
     -- Define a table of themes
     local themes = {
       onedark = onedark_theme,
-      nord = 'nord',
+      auto = 'auto',
     }
 
     local hide_in_width = function()
