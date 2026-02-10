@@ -33,6 +33,11 @@ return {
             height = { padding = 0 },
           },
         },
+        path_display = {
+          filename_first = {
+            reverse_directories = true,
+          },
+        },
         mappings = {
           i = {
             ['<C-k>'] = actions.move_selection_previous, -- move to prev result
@@ -66,25 +71,20 @@ return {
         oldfiles = {
           initial_mode = 'normal',
         },
-      },
-      live_grep = {
-        file_ignore_patterns = { 'node_modules', '.git', '.venv' },
-        additional_args = function(_)
-          return { '--hidden' }
-        end,
-      },
-      path_display = {
-        filename_first = {
-          reverse_directories = true,
+        live_grep = {
+          file_ignore_patterns = { 'node_modules', '.git', '.venv' },
+          additional_args = function(_)
+            return { '--hidden' }
+          end,
+        },
+        git_files = {
+          previewer = false,
         },
       },
       extensions = {
         ['ui-select'] = {
           require('telescope.themes').get_dropdown(),
         },
-      },
-      git_files = {
-        previewer = false,
       },
     }
 
