@@ -26,6 +26,7 @@ vim.keymap.set(
 vim.keymap.set('n', '<Esc>', ':noh<CR>', opts)
 
 -- save file
+vim.keymap.set('n', '<C-s>', '<cmd> wa <CR>', opts)
 vim.keymap.set('n', '<leader>sa', '<cmd> wa <CR>', opts)
 
 -- save file without auto-formatting
@@ -78,7 +79,7 @@ vim.keymap.set('n', '<C-h>', ':wincmd h<CR>', opts)
 vim.keymap.set('n', '<C-l>', ':wincmd l<CR>', opts)
 
 -- Buffers
-vim.keymap.set('n', '<leader>tc', ':BufferLineCloseOthers<CR>', opts) -- close all buffers except current
+vim.keymap.set('n', '<leader>qt', ':BufferLineCloseOthers<CR>', opts) -- close all buffers except current
 
 -- Toggle line wrapping
 vim.keymap.set('n', '<leader>lw', '<cmd>set wrap!<CR>', opts)
