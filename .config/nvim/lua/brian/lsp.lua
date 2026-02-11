@@ -1,4 +1,17 @@
 local keymap = vim.keymap -- for conciseness
+
+-- Disable semantic tokens for ts_ls so it does not override
+-- treesitter injection highlighting in Angular inline templates
+vim.api.nvim_create_autocmd('LspAttach', {
+  group = vim.api.nvim_create_augroup('DisableTsLsSemanticTokens', {}),
+  callback = function(ev)
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if client and client.name == 'ts_ls' then
+      client.server_capabilities.semanticTokensProvider = nil
+    end
+  end,
+})
+
 vim.api.nvim_create_autocmd('LspAttach', {
   group = vim.api.nvim_create_augroup('UserLspConfig', {}),
   callback = function(ev)
