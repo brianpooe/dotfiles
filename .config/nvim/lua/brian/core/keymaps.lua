@@ -167,14 +167,14 @@ local function angular_switch(section)
   local is_ts = file:match '%.component%.ts$'
 
   -- If we're in a .ts file, check for inline sections before switching files
-  if is_ts and (section == 'template' or section == 'styles' or section == 'class') then
+  if is_ts and (section == 'template' or section == 'styles' or section == 'ts') then
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
     local pattern
     if section == 'template' then
       pattern = '^%s*template%s*:'
     elseif section == 'styles' then
       pattern = '^%s*styles%s*:'
-    elseif section == 'class' then
+    elseif section == 'ts' then
       pattern = '^export%s+class%s+'
     end
 
