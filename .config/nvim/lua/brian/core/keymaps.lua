@@ -153,8 +153,10 @@ vim.keymap.set('v', '<leader>st', ':sort u<CR>', { noremap = true })
 -- Toggle case
 vim.keymap.set('v', '<leader>~', 'g~', { noremap = true })
 
--- Angular component file switching
-local function angular_switch(ext)
+-- Angular component file/section switching
+-- For multi-file components: jump to the corresponding file
+-- For inline components: jump to the template/styles/class section
+local function angular_switch(section)
   local file = vim.fn.expand '%:p'
   local base = file:match '(.+)%.component%..+$'
   if not base then
@@ -162,26 +164,67 @@ local function angular_switch(ext)
     return
   end
 
+  local is_ts = file:match '%.component%.ts$'
+
+  -- If we're in a .ts file, check for inline sections before switching files
+  if is_ts and (section == 'template' or section == 'styles' or section == 'class') then
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    local pattern
+    if section == 'template' then
+      pattern = '^%s*template%s*:'
+    elseif section == 'styles' then
+      pattern = '^%s*styles%s*:'
+    elseif section == 'class' then
+      pattern = '^export%s+class%s+'
+    end
+
+    for i, line in ipairs(lines) do
+      if line:match(pattern) then
+        vim.api.nvim_win_set_cursor(0, { i, 0 })
+        vim.cmd 'normal! zz'
+        return
+      end
+    end
+
+    -- No inline section found, fall through to file switching
+    if section == 'template' then
+      vim.cmd('edit ' .. base .. '.component.html')
+    elseif section == 'styles' then
+      local scss = base .. '.component.scss'
+      local target = vim.fn.filereadable(scss) == 1 and scss
+        or base .. '.component.css'
+      vim.cmd('edit ' .. target)
+    end
+    return
+  end
+
+  -- File switching for non-.ts files or spec
   local target
-  if ext == 'styles' then
+  if section == 'ts' then
+    target = base .. '.component.ts'
+  elseif section == 'template' then
+    target = base .. '.component.html'
+  elseif section == 'styles' then
     local scss = base .. '.component.scss'
     target = vim.fn.filereadable(scss) == 1 and scss
       or base .. '.component.css'
-  else
-    target = base .. '.component.' .. ext
+  elseif section == 'spec' then
+    target = base .. '.component.spec.ts'
   end
-  vim.cmd('edit ' .. target)
+  if target then
+    vim.cmd('edit ' .. target)
+  end
 end
 
 vim.keymap.set('n', '<leader>ot', function()
   angular_switch 'ts'
-end, { desc = 'Angular: open component TypeScript' })
+end, { desc = 'Angular: go to component class' })
 vim.keymap.set('n', '<leader>oh', function()
-  angular_switch 'html'
-end, { desc = 'Angular: open component template' })
+  angular_switch 'template'
+end, { desc = 'Angular: go to template' })
 vim.keymap.set('n', '<leader>oc', function()
   angular_switch 'styles'
-end, { desc = 'Angular: open component styles' })
+end, { desc = 'Angular: go to styles' })
 vim.keymap.set('n', '<leader>os', function()
-  angular_switch 'spec.ts'
-end, { desc = 'Angular: open component spec' })
+  angular_switch 'spec'
+end, { desc = 'Angular: go to spec' })
