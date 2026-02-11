@@ -25,6 +25,8 @@ return {
         yaml = { 'yamlfmt', 'prettierd', 'prettier', stop_after_first = true },
         markdown = { 'cbfmt', 'prettierd', 'prettier', stop_after_first = true },
         graphql = { 'prettierd', 'prettier', stop_after_first = true },
+        html = { 'prettierd', 'prettier', stop_after_first = true },
+        htmlangular = { 'prettierd', 'prettier', stop_after_first = true },
         lua = { 'stylua' },
         go = { 'goimports', 'ast_grep' },
         rust = { 'ast_grep' },

@@ -152,3 +152,36 @@ vim.keymap.set(
 vim.keymap.set('v', '<leader>st', ':sort u<CR>', { noremap = true })
 -- Toggle case
 vim.keymap.set('v', '<leader>~', 'g~', { noremap = true })
+
+-- Angular component file switching
+local function angular_switch(ext)
+  local file = vim.fn.expand '%:p'
+  local base = file:match '(.+)%.component%..+$'
+  if not base then
+    vim.notify('Not an Angular component file', vim.log.levels.WARN)
+    return
+  end
+
+  local target
+  if ext == 'styles' then
+    local scss = base .. '.component.scss'
+    target = vim.fn.filereadable(scss) == 1 and scss
+      or base .. '.component.css'
+  else
+    target = base .. '.component.' .. ext
+  end
+  vim.cmd('edit ' .. target)
+end
+
+vim.keymap.set('n', '<leader>ot', function()
+  angular_switch 'ts'
+end, { desc = 'Angular: open component TypeScript' })
+vim.keymap.set('n', '<leader>oh', function()
+  angular_switch 'html'
+end, { desc = 'Angular: open component template' })
+vim.keymap.set('n', '<leader>oc', function()
+  angular_switch 'styles'
+end, { desc = 'Angular: open component styles' })
+vim.keymap.set('n', '<leader>os', function()
+  angular_switch 'spec.ts'
+end, { desc = 'Angular: open component spec' })
