@@ -6,12 +6,11 @@ set -euo pipefail
 # Pre-downloads ALL Neovim dependencies for offline use behind a corporate proxy.
 #
 # Run this on a machine with unrestricted internet access. It will:
-#   1. Bootstrap lazy.nvim and install all plugins (git clones + build steps)
-#   2. Install all Mason packages (LSP servers, linters, formatters, DAP adapters)
+#   1. Bootstrap lazy.nvim
+#   2. Install all plugins, treesitter parsers, and Mason packages in a
+#      single nvim session (avoids conflicts between mason-nvim-dap and
+#      mason-tool-installer)
 #   3. Package everything into a portable tarball
-#
-# Treesitter parsers are compiled automatically during step 1 via the
-# :TSUpdate build step and ensure_installed in the config.
 #
 # Prerequisites:
 #   - nvim (same version as the target machine)
@@ -74,19 +73,26 @@ else
     info "  lazy.nvim already present, skipping clone"
 fi
 
-# ── Step 2: Install all plugins + treesitter parsers ────────────────────────
-info "Step 2/3: Installing plugins via Lazy sync..."
+# ── Step 2: Install plugins, treesitter parsers, and Mason packages ─────────
+info "Step 2/3: Installing plugins, parsers, and Mason packages..."
 info "  This clones all plugin repos, runs build steps (fzf-native, treesitter"
-info "  parsers), and installs mason-nvim-dap adapters."
+info "  parsers), installs DAP adapters, and downloads Mason packages."
+info "  This may take several minutes..."
 
-# Lazy sync installs all plugins and runs build steps (:TSUpdate compiles
-# treesitter parsers, telescope-fzf-native runs make, etc.).
-# After sync completes, mason-nvim-dap fires async installs for DAP adapters.
-# We poll the Mason registry and wait for all async installs to finish before
-# quitting, so nothing gets aborted.
+# Everything runs in a SINGLE nvim session to avoid conflicts between
+# mason-nvim-dap and mason-tool-installer (both try to install codelldb).
+#
+# Sequence:
+#   1. Lazy sync: clones plugins, runs build steps (:TSUpdate, fzf make, etc.)
+#   2. vim.wait(5000): lets vim.schedule callbacks fire so mason-nvim-dap
+#      can start its async package installs (debugpy, js-debug-adapter, codelldb)
+#   3. Poll Mason registry: wait until all async installs finish
+#   4. MasonToolsInstallSync: installs remaining LSP servers, linters, formatters
+#      (skips packages already installed by mason-nvim-dap)
 nvim --headless \
     -u "$NVIM_CONFIG/init.lua" \
     -c "lua require('lazy').sync({wait=true})" \
+    -c "lua vim.wait(5000)" \
     -c "lua vim.wait(120000, function()
         local ok, registry = pcall(require, 'mason-registry')
         if not ok then return true end
@@ -95,7 +101,8 @@ nvim --headless \
         end
         return true
     end, 2000)" \
-    -c "qa" 2>&1 || warn "Lazy sync reported warnings (may be normal for headless)"
+    -c "MasonToolsInstallSync" \
+    -c "qa" 2>&1 || warn "Some installs reported warnings (may be normal for headless)"
 
 # Verify treesitter parsers
 TS_PARSER_DIR="$XDG_DATA_HOME/nvim/lazy/nvim-treesitter/parser"
@@ -105,14 +112,6 @@ if [ -d "$TS_PARSER_DIR" ]; then
 else
     warn "  No treesitter parser directory found"
 fi
-
-# ── Step 3: Install Mason packages ─────────────────────────────────────────
-info "Step 3/3: Installing Mason packages (LSP servers, linters, formatters)..."
-info "  This downloads binaries and may take several minutes..."
-nvim --headless \
-    -u "$NVIM_CONFIG/init.lua" \
-    -c "MasonToolsInstallSync" \
-    -c "qa" 2>&1 || warn "Some Mason packages may have failed"
 
 # Verify Mason installations
 info "Verifying Mason packages..."
@@ -124,14 +123,15 @@ else
     warn "  You can install Mason packages manually and re-run this script"
 fi
 
-# ── Copy lazy-lock.json ────────────────────────────────────────────────────
+# ── Step 3: Package the bundle ──────────────────────────────────────────────
+
+# Copy lazy-lock.json
 if [ -f "$NVIM_CONFIG/lazy-lock.json" ]; then
     cp "$NVIM_CONFIG/lazy-lock.json" "$BUNDLE_DIR/"
     info "Copied lazy-lock.json to bundle"
 fi
 
-# ── Create tarball ──────────────────────────────────────────────────────────
-info "Creating tarball..."
+info "Step 3/3: Creating tarball..."
 TARBALL="$(cd "$(dirname "$BUNDLE_DIR")" && pwd)/nvim-offline-bundle.tar.gz"
 tar -czf "$TARBALL" -C "$(dirname "$BUNDLE_DIR")" "$(basename "$BUNDLE_DIR")"
 TARBALL_SIZE=$(du -h "$TARBALL" | cut -f1)
