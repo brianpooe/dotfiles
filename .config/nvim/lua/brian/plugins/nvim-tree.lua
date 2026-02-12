@@ -35,6 +35,7 @@ return {
       git = {
         enable = true,
         ignore = false,
+        timeout = 2000,
       },
     }
   end,
