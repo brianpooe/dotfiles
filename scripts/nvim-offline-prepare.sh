@@ -6,10 +6,12 @@ set -euo pipefail
 # Pre-downloads ALL Neovim dependencies for offline use behind a corporate proxy.
 #
 # Run this on a machine with unrestricted internet access. It will:
-#   1. Install all lazy.nvim plugins (git clones + build steps)
-#   2. Install all Treesitter parsers (compiled .so files)
-#   3. Install all Mason packages (LSP servers, linters, formatters, DAP adapters)
-#   4. Package everything into a portable tarball
+#   1. Bootstrap lazy.nvim and install all plugins (git clones + build steps)
+#   2. Install all Mason packages (LSP servers, linters, formatters, DAP adapters)
+#   3. Package everything into a portable tarball
+#
+# Treesitter parsers are compiled automatically during step 1 via the
+# :TSUpdate build step and ensure_installed in the config.
 #
 # Prerequisites:
 #   - nvim (same version as the target machine)
@@ -63,7 +65,7 @@ export XDG_CACHE_HOME="$BUNDLE_DIR/cache"
 unset NVIM_OFFLINE
 
 # ── Step 1: Bootstrap lazy.nvim ─────────────────────────────────────────────
-info "Step 1/4: Bootstrapping lazy.nvim..."
+info "Step 1/3: Bootstrapping lazy.nvim..."
 LAZY_DIR="$XDG_DATA_HOME/nvim/lazy/lazy.nvim"
 if [ ! -d "$LAZY_DIR" ]; then
     git clone --filter=blob:none --branch=stable \
@@ -72,41 +74,43 @@ else
     info "  lazy.nvim already present, skipping clone"
 fi
 
-# ── Step 2: Install all plugins ─────────────────────────────────────────────
-info "Step 2/4: Installing plugins via Lazy sync..."
-info "  This clones all plugin repos and runs build steps (fzf-native, etc.)"
+# ── Step 2: Install all plugins + treesitter parsers ────────────────────────
+info "Step 2/3: Installing plugins via Lazy sync..."
+info "  This clones all plugin repos, runs build steps (fzf-native, treesitter"
+info "  parsers), and installs mason-nvim-dap adapters."
+
+# Lazy sync installs all plugins and runs build steps (:TSUpdate compiles
+# treesitter parsers, telescope-fzf-native runs make, etc.).
+# After sync completes, mason-nvim-dap fires async installs for DAP adapters.
+# We poll the Mason registry and wait for all async installs to finish before
+# quitting, so nothing gets aborted.
 nvim --headless \
     -u "$NVIM_CONFIG/init.lua" \
     -c "lua require('lazy').sync({wait=true})" \
+    -c "lua vim.wait(120000, function()
+        local ok, registry = pcall(require, 'mason-registry')
+        if not ok then return true end
+        for _, pkg in ipairs(registry.get_all_packages()) do
+            if pkg:is_installing() then return false end
+        end
+        return true
+    end, 2000)" \
     -c "qa" 2>&1 || warn "Lazy sync reported warnings (may be normal for headless)"
 
-# Run again to catch any plugins that depend on others being present
-sleep 2
-nvim --headless \
-    -u "$NVIM_CONFIG/init.lua" \
-    -c "lua require('lazy').sync({wait=true})" \
-    -c "qa" 2>&1 || true
+# Verify treesitter parsers
+TS_PARSER_DIR="$XDG_DATA_HOME/nvim/lazy/nvim-treesitter/parser"
+if [ -d "$TS_PARSER_DIR" ]; then
+    TS_COUNT=$(ls -1 "$TS_PARSER_DIR"/*.so 2>/dev/null | wc -l)
+    info "  $TS_COUNT treesitter parsers compiled"
+else
+    warn "  No treesitter parser directory found"
+fi
 
-# ── Step 3: Install Treesitter parsers ──────────────────────────────────────
-info "Step 3/4: Installing Treesitter parsers..."
-
-TREESITTER_LANGS=(
-    angular lua python javascript typescript vimdoc vim regex
-    terraform sql dockerfile toml json java groovy go gitignore
-    graphql yaml make cmake markdown markdown_inline bash tsx css html rust
-)
-
-nvim --headless \
-    -u "$NVIM_CONFIG/init.lua" \
-    -c "TSInstallSync ${TREESITTER_LANGS[*]}" \
-    -c "qa" 2>&1 || warn "Some Treesitter parsers may have failed (check compiler availability)"
-
-# ── Step 4: Install Mason packages ─────────────────────────────────────────
-info "Step 4/4: Installing Mason packages (LSP servers, linters, formatters, DAP)..."
+# ── Step 3: Install Mason packages ─────────────────────────────────────────
+info "Step 3/3: Installing Mason packages (LSP servers, linters, formatters)..."
 info "  This downloads binaries and may take several minutes..."
 nvim --headless \
     -u "$NVIM_CONFIG/init.lua" \
-    -c "lua vim.wait(5000)" \
     -c "MasonToolsInstallSync" \
     -c "qa" 2>&1 || warn "Some Mason packages may have failed"
 
@@ -142,8 +146,11 @@ if [ -d "$XDG_DATA_HOME/nvim/lazy" ]; then
     PLUGIN_COUNT=$(ls -1 "$XDG_DATA_HOME/nvim/lazy" 2>/dev/null | wc -l)
     echo "    Plugins            : $PLUGIN_COUNT"
 fi
+if [ -d "$TS_PARSER_DIR" ]; then
+    echo "    Treesitter parsers : ${TS_COUNT:-0}"
+fi
 if [ -d "$XDG_DATA_HOME/nvim/mason/packages" ]; then
-    echo "    Mason packages     : $MASON_COUNT"
+    echo "    Mason packages     : ${MASON_COUNT:-0}"
 fi
 echo ""
 echo "    Next steps:"
