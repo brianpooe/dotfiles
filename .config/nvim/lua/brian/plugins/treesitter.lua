@@ -37,7 +37,7 @@ return {
       'html',
       'rust',
     },
-    auto_install = true,
+    auto_install = not vim.g.offline_mode,
     highlight = { enable = true },
     indent = { enable = true },
     incremental_selection = {

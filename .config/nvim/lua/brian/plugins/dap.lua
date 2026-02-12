@@ -49,13 +49,13 @@ return {
       dependencies = 'mason.nvim',
       cmd = { 'DapInstall', 'DapUninstall' },
       opts = {
-        automatic_installation = true,
+        automatic_installation = not vim.g.offline_mode,
         handlers = {},
-        ensure_installed = {
+        ensure_installed = not vim.g.offline_mode and {
           'python',
           'js',
           'codelldb',
-        },
+        } or {},
       },
     },
   },

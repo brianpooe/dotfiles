@@ -22,14 +22,19 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+local offline = vim.g.offline_mode
+
 require('lazy').setup {
   spec = {
     { import = 'brian.plugins' },
   },
   install = { colorscheme = { 'kanagawa' } },
-  checker = { enabled = true, notify = false },
+  checker = { enabled = not offline, notify = false },
   change_detection = {
     notify = false,
+  },
+  git = {
+    timeout = offline and 1 or 120,
   },
 }
 vim.keymap.set('n', '<leader>l', '<cmd>:Lazy<cr>', { desc = 'Plugin Manager' })
