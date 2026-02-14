@@ -4,11 +4,7 @@ set -euo pipefail
 # nvim-offline-install.sh
 # =======================
 # Deploys pre-downloaded Neovim dependencies on an offline / corporate proxy machine.
-#
-# Guarantees:
-#   - No AppleDouble (._*) files
-#   - No extended attributes / ACLs
-#   - Safe replacement of existing installs
+# Compatible with the Docker-generated offline bundle.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
@@ -55,6 +51,7 @@ TMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR"' EXIT
 
 info "Extracting bundle..."
+# Note: Docker tarball creates a flat structure (share/ at root)
 tar \
     --no-xattrs \
     --no-acls \
@@ -62,9 +59,15 @@ tar \
     -xzf "$TARBALL" \
     -C "$TMPDIR"
 
-BUNDLE_DIR="$TMPDIR/nvim-offline-bundle"
+# [CRITICAL CHANGE]
+# The Docker script places 'share' directly in the root of the tarball.
+# We no longer look for a 'nvim-offline-bundle' subdirectory.
+BUNDLE_DIR="$TMPDIR"
+
 if [ ! -d "$BUNDLE_DIR/share/nvim" ]; then
-    error "Invalid bundle: missing share/nvim directory"
+    error "Invalid bundle structure: 'share/nvim' directory not found."
+    echo "    Debug: Extracted contents of $TMPDIR:"
+    ls -F "$TMPDIR"
     exit 1
 fi
 
@@ -75,8 +78,11 @@ if find "$BUNDLE_DIR" -name '._*' | grep -q .; then
 fi
 
 # ── Install lazy.nvim plugins ──────────────────────────────────────────────
-if [ -d "$BUNDLE_DIR/share/nvim/lazy" ]; then
-    PLUGIN_COUNT=$(ls -1 "$BUNDLE_DIR/share/nvim/lazy" | wc -l)
+# Path in bundle: share/nvim/lazy
+SOURCE_LAZY="$BUNDLE_DIR/share/nvim/lazy"
+
+if [ -d "$SOURCE_LAZY" ]; then
+    PLUGIN_COUNT=$(ls -1 "$SOURCE_LAZY" | wc -l)
     info "Installing $PLUGIN_COUNT plugins..."
 
     if [ -d "$NVIM_DATA/lazy" ]; then
@@ -86,12 +92,15 @@ if [ -d "$BUNDLE_DIR/share/nvim/lazy" ]; then
     fi
 
     mkdir -p "$NVIM_DATA"
-    rsync -a --delete "$BUNDLE_DIR/share/nvim/lazy/" "$NVIM_DATA/lazy/"
+    rsync -a --delete "$SOURCE_LAZY/" "$NVIM_DATA/lazy/"
 fi
 
 # ── Install Mason packages ─────────────────────────────────────────────────
-if [ -d "$BUNDLE_DIR/share/nvim/mason" ]; then
-    MASON_COUNT=$(ls -1 "$BUNDLE_DIR/share/nvim/mason/packages" 2>/dev/null | wc -l)
+# Path in bundle: share/nvim/mason
+SOURCE_MASON="$BUNDLE_DIR/share/nvim/mason"
+
+if [ -d "$SOURCE_MASON" ]; then
+    MASON_COUNT=$(ls -1 "$SOURCE_MASON/packages" 2>/dev/null | wc -l)
     info "Installing $MASON_COUNT Mason packages..."
 
     if [ -d "$NVIM_DATA/mason" ]; then
@@ -100,7 +109,7 @@ if [ -d "$BUNDLE_DIR/share/nvim/mason" ]; then
         mv "$NVIM_DATA/mason" "$NVIM_DATA/mason.bak"
     fi
 
-    rsync -a --delete "$BUNDLE_DIR/share/nvim/mason/" "$NVIM_DATA/mason/"
+    rsync -a --delete "$SOURCE_MASON/" "$NVIM_DATA/mason/"
 fi
 
 # ── Install lazy-lock.json ─────────────────────────────────────────────────
@@ -129,9 +138,3 @@ echo "    │    export NVIM_OFFLINE=1                                │"
 echo "    │                                                         │"
 echo "    │  Then restart your shell or run: source ~/.zshrc        │"
 echo "    └─────────────────────────────────────────────────────────┘"
-echo ""
-echo "    This disables all network activity in Neovim:"
-echo "    - lazy.nvim updates"
-echo "    - Mason auto-installs"
-echo "    - Treesitter auto-downloads"
-echo "    - DAP adapter fetches"

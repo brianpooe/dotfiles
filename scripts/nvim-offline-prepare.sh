@@ -3,19 +3,15 @@ set -euo pipefail
 
 # nvim-offline-prepare.sh
 # =======================
-# Pre-downloads ALL Neovim dependencies for offline use behind a corporate proxy.
-#
-# Produces a *clean, Linux-safe tarball*:
-#   - No AppleDouble (._*) files
-#   - No extended attributes, ACLs, or resource forks
-#
-# Run on a machine with unrestricted internet access.
+# Spins up a temporary x86_64 Linux container to download/compile ALL Neovim
+# dependencies (Lazy, TreeSitter, Mason, blink.cmp) for a Linux target.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
 NVIM_CONFIG="$DOTFILES_DIR/.config/nvim"
-BUNDLE_DIR="${1:-$SCRIPT_DIR/nvim-offline-bundle}"
+OUTPUT_DIR="$SCRIPT_DIR/nvim-offline-bundle-output"
 
+# ── Colors & Helpers ────────────────────────────────────────────────────────
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -25,122 +21,131 @@ info() { echo -e "${GREEN}==>${NC} $*"; }
 warn() { echo -e "${YELLOW}WARNING:${NC} $*"; }
 error() { echo -e "${RED}ERROR:${NC} $*" >&2; }
 
-# ── macOS archive hygiene ────────────────────────────────────────────────────
-# Absolutely critical: prevents creation of ._* AppleDouble files
-export COPYFILE_DISABLE=1
-
-# ── Verify prerequisites ────────────────────────────────────────────────────
-command -v nvim >/dev/null 2>&1 || {
-    error "nvim is not installed"
+# ── Checks ──────────────────────────────────────────────────────────────────
+command -v docker >/dev/null 2>&1 || {
+    error "Docker is required but not installed."
     exit 1
 }
-command -v git >/dev/null 2>&1 || {
-    error "git is not installed"
-    exit 1
-}
-
-if [ ! -f "$NVIM_CONFIG/init.lua" ]; then
-    error "Neovim config not found at $NVIM_CONFIG/init.lua"
+if ! docker info >/dev/null 2>&1; then
+    error "Docker is not running."
     exit 1
 fi
 
-info "Preparing offline Neovim bundle..."
-echo "    Neovim config : $NVIM_CONFIG"
-echo "    Bundle output : $BUNDLE_DIR"
-echo ""
+# Create output directory
+mkdir -p "$OUTPUT_DIR"
+# Clear previous run artifacts
+rm -rf "$OUTPUT_DIR/nvim-offline-bundle.tar.gz"
 
-mkdir -p "$BUNDLE_DIR/share/nvim" "$BUNDLE_DIR/state/nvim" "$BUNDLE_DIR/cache/nvim"
+info "Starting Linux container (x86_64) to build offline bundle..."
+info "  Source Config : $NVIM_CONFIG"
+info "  Output Dir    : $OUTPUT_DIR"
 
-# Use isolated XDG directories
-export XDG_DATA_HOME="$BUNDLE_DIR/share"
-export XDG_STATE_HOME="$BUNDLE_DIR/state"
-export XDG_CACHE_HOME="$BUNDLE_DIR/cache"
+# ── Run Builder Container ───────────────────────────────────────────────────
+# We use --platform linux/amd64 to simulate a standard corporate Linux server.
+# This ensures binaries (blink.cmp) and parsers (treesitter) are compiled for x86_64.
 
-unset NVIM_OFFLINE
+docker run --rm \
+    --platform linux/amd64 \
+    -v "$NVIM_CONFIG:/root/.config/nvim:ro" \
+    -v "$OUTPUT_DIR:/output" \
+    -e HOST_UID="$(id -u)" \
+    -e HOST_GID="$(id -g)" \
+    ubuntu:22.04 /bin/bash -c '
 
-# ── Step 1: Bootstrap lazy.nvim ─────────────────────────────────────────────
-info "Step 1/3: Bootstrapping lazy.nvim..."
-LAZY_DIR="$XDG_DATA_HOME/nvim/lazy/lazy.nvim"
-if [ ! -d "$LAZY_DIR" ]; then
-    git clone --filter=blob:none --branch=stable \
-        https://github.com/folke/lazy.nvim.git "$LAZY_DIR"
-else
-    info "  lazy.nvim already present, skipping clone"
-fi
+    set -e
 
-# ── Step 2: Install plugins, treesitter parsers, Mason packages ─────────────
-info "Step 2/3: Installing plugins, parsers, and Mason packages..."
-info "  This runs everything in a single headless nvim session..."
+    echo ">> [Container] Installing dependencies..."
+    # Install build tools needed for Mason/TreeSitter compilations
+    apt-get update -qq && apt-get install -y -qq \
+        git curl wget unzip tar gzip build-essential python3 python3-venv nodejs npm \
+        >/dev/null
 
-nvim --headless \
-    -u "$NVIM_CONFIG/init.lua" \
-    -c "lua require('lazy').sync({wait=true})" \
-    -c "lua vim.wait(5000)" \
-    -c "lua vim.wait(120000, function()
-        local ok, registry = pcall(require, 'mason-registry')
-        if not ok then return true end
-        for _, pkg in ipairs(registry.get_all_packages()) do
-            if pkg:is_installing() then return false end
-        end
-        return true
-    end, 2000)" \
-    -c "MasonToolsInstallSync" \
-    -c "qa" 2>&1 || warn "Some installs reported warnings (usually harmless)"
+    echo ">> [Container] Fetching Neovim (latest stable)..."
+    cd /tmp
 
-# ── Verification ────────────────────────────────────────────────────────────
-TS_PARSER_DIR="$XDG_DATA_HOME/nvim/lazy/nvim-treesitter/parser"
-if [ -d "$TS_PARSER_DIR" ]; then
-    TS_COUNT=$(ls -1 "$TS_PARSER_DIR"/*.so 2>/dev/null | wc -l)
-    info "  $TS_COUNT treesitter parsers compiled"
-fi
+    # Robustly fetch the latest tag to avoid "Not Found" errors
+    TAG=$(curl -sL https://api.github.com/repos/neovim/neovim/releases/latest | grep '"tag_name":' | sed -E "s/.*\"([^\"]+)\".*/\1/")
 
-if [ -d "$XDG_DATA_HOME/nvim/mason/packages" ]; then
-    MASON_COUNT=$(ls -1 "$XDG_DATA_HOME/nvim/mason/packages" | wc -l)
-    info "  $MASON_COUNT Mason packages installed"
-fi
+    if [ -z "$TAG" ]; then
+        echo "Error: Could not determine latest Neovim version via GitHub API."
+        exit 1
+    fi
 
-# ── Step 3: Sanitize + Package ──────────────────────────────────────────────
-info "Step 3/3: Sanitizing bundle..."
+    echo ">> [Container] Downloading $TAG for x86_64..."
+    URL="https://github.com/neovim/neovim/releases/download/${TAG}/nvim-linux64.tar.gz"
 
-# Hard-delete any AppleDouble files (defensive)
-find "$BUNDLE_DIR" -name '._*' -type f -delete
+    curl -L -o nvim-linux64.tar.gz "$URL"
 
-# Fail hard if any remain
-if find "$BUNDLE_DIR" -name '._*' | grep -q .; then
-    error "AppleDouble files detected after cleanup. Aborting."
-    exit 1
-fi
+    # Verify download integrity ( > 1MB )
+    FILESIZE=$(stat -c%s nvim-linux64.tar.gz)
+    if [ "$FILESIZE" -lt 1000000 ]; then
+        echo "Error: Download failed (file too small). URL: $URL"
+        cat nvim-linux64.tar.gz
+        exit 1
+    fi
 
-# Copy lockfile for reproducibility
-if [ -f "$NVIM_CONFIG/lazy-lock.json" ]; then
-    cp "$NVIM_CONFIG/lazy-lock.json" "$BUNDLE_DIR/"
-    info "Copied lazy-lock.json"
-fi
+    tar -xf nvim-linux64.tar.gz
+    export PATH="/tmp/nvim-linux64/bin:$PATH"
 
-info "Creating tarball..."
-TARBALL="$(cd "$(dirname "$BUNDLE_DIR")" && pwd)/nvim-offline-bundle.tar.gz"
+    # Define isolated XDG paths for the bundle
+    export BUNDLE_ROOT="/output/bundle"
+    export XDG_DATA_HOME="$BUNDLE_ROOT/share"
+    export XDG_STATE_HOME="$BUNDLE_ROOT/state"
+    export XDG_CACHE_HOME="$BUNDLE_ROOT/cache"
+    export NVIM_OFFLINE_PREPARE=1
 
-tar \
-    --no-xattrs \
-    --no-acls \
-    --no-selinux \
-    -czf "$TARBALL" \
-    -C "$(dirname "$BUNDLE_DIR")" \
-    "$(basename "$BUNDLE_DIR")"
+    mkdir -p "$XDG_DATA_HOME" "$XDG_STATE_HOME" "$XDG_CACHE_HOME"
 
-TARBALL_SIZE=$(du -h "$TARBALL" | cut -f1)
+    echo ">> [Container] 1/3 Syncing Lazy plugins..."
+    # We bootstrap lazy.nvim manually first
+    git clone --filter=blob:none https://github.com/folke/lazy.nvim.git \
+        "$XDG_DATA_HOME/nvim/lazy/lazy.nvim" || true
+
+    echo ">> [Container] 2/3 Running Headless Installation..."
+    # This runs nvim inside the container to:
+    # 1. Download all plugins
+    # 2. Compile TreeSitter parsers (generating .so files for Linux)
+    # 3. Install Mason tools (downloading Linux binaries)
+    nvim --headless \
+        -c "lua require(\"lazy\").restore({wait=true})" \
+        -c "lua vim.wait(1000)" \
+        -c "MasonToolsInstallSync" \
+        -c "qa"
+
+    # Verification
+    PLUGIN_COUNT=$(find "$XDG_DATA_HOME/nvim/lazy" -mindepth 1 -maxdepth 1 -type d | wc -l)
+    echo ">> [Container] Installed $PLUGIN_COUNT plugins."
+
+    # Cleanup junk
+    echo ">> [Container] 3/3 Packaging & Cleaning..."
+    find "$BUNDLE_ROOT" -name ".git" -type d -exec rm -rf {} +
+
+    # Copy lockfile
+    if [ -f /root/.config/nvim/lazy-lock.json ]; then
+        cp /root/.config/nvim/lazy-lock.json "$BUNDLE_ROOT/"
+    fi
+
+    # Create the Tarball
+    cd /output
+    tar -czf nvim-offline-bundle.tar.gz -C "$BUNDLE_ROOT" .
+
+    # Fix ownership
+    chown "$HOST_UID:$HOST_GID" nvim-offline-bundle.tar.gz
+
+    echo ">> [Container] Done."
+'
 
 # ── Summary ─────────────────────────────────────────────────────────────────
-echo ""
-info "Bundle created successfully!"
-echo ""
-echo "    Tarball : $TARBALL ($TARBALL_SIZE)"
-echo ""
-echo "    Plugins            : ${PLUGIN_COUNT:-unknown}"
-echo "    Treesitter parsers : ${TS_COUNT:-0}"
-echo "    Mason packages     : ${MASON_COUNT:-0}"
-echo ""
-echo "    Next steps:"
-echo "    1. Transfer the tarball to the offline machine"
-echo "    2. Run: ./scripts/nvim-offline-install.sh $TARBALL"
-echo "    3. export NVIM_OFFLINE=1"
+TARBALL="$OUTPUT_DIR/nvim-offline-bundle.tar.gz"
+
+if [ -f "$TARBALL" ]; then
+    SIZE=$(du -h "$TARBALL" | cut -f1)
+    echo ""
+    info "Success! Bundle created at:"
+    echo "   $TARBALL ($SIZE)"
+    echo ""
+    echo "   Target Platform: Linux (x86_64)"
+else
+    error "Docker container finished but tarball was not found."
+    exit 1
+fi
