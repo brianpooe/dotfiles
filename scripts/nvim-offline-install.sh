@@ -39,38 +39,37 @@ copy_tree() {
     rsync -a --delete "$src/" "$dst/"
 }
 
-rewrite_mason_bin_wrappers() {
+rewrite_mason_paths() {
     local mason_root="$1"
-    local bin_dir="$mason_root/bin"
     local rewritten=0
 
-    if [ ! -d "$bin_dir" ]; then
+    if [ ! -d "$mason_root" ]; then
         return 0
     fi
 
-    while IFS= read -r -d '' shim; do
-        # Skip binary executables; only rewrite text wrapper scripts.
-        if ! LC_ALL=C grep -Iq . "$shim"; then
+    while IFS= read -r -d '' file; do
+        # Only rewrite text files.
+        if ! LC_ALL=C grep -Iq . "$file"; then
             continue
         fi
-        if ! grep -q '/mason/packages/' "$shim"; then
+        if ! grep -q '/mason/packages/' "$file"; then
             continue
         fi
 
         local tmp
         tmp="$(mktemp)"
         local escaped_root="${mason_root//&/\\&}"
-        sed -E "s|/[^\"'[:space:]]*/mason/packages/|$escaped_root/packages/|g" "$shim" >"$tmp"
+        sed -E "s|/[^\"'[:space:]]*/mason/packages/|$escaped_root/packages/|g" "$file" >"$tmp"
 
-        if ! cmp -s "$shim" "$tmp"; then
-            cat "$tmp" >"$shim"
-            chmod +x "$shim" || true
+        if ! cmp -s "$file" "$tmp"; then
+            cat "$tmp" >"$file"
+            chmod +x "$file" || true
             rewritten=$((rewritten + 1))
         fi
         rm -f "$tmp"
-    done < <(find "$bin_dir" -mindepth 1 -maxdepth 1 -type f -print0)
+    done < <(find "$mason_root" -type f -print0)
 
-    info "Rewrote $rewritten Mason wrapper(s) in $bin_dir"
+    info "Rewrote $rewritten Mason file(s) in $mason_root"
 }
 
 if ! command -v rsync >/dev/null 2>&1; then
@@ -156,10 +155,10 @@ if [ -d "$SOURCE_MASON" ]; then
     fi
 
     copy_tree "$SOURCE_MASON" "$NVIM_DATA/mason"
-    rewrite_mason_bin_wrappers "$NVIM_DATA/mason"
+    rewrite_mason_paths "$NVIM_DATA/mason"
 
-    if grep -R -q '/tmp/runtime/share/nvim/mason/packages/' "$NVIM_DATA/mason/bin" 2>/dev/null; then
-        error "Stale Mason wrapper paths detected after rewrite. Aborting."
+    if rg -n '/tmp/runtime/share/nvim/mason/packages/' "$NVIM_DATA/mason" -S >/dev/null 2>&1; then
+        error "Stale Mason package paths detected after rewrite. Aborting."
         exit 1
     fi
 fi
