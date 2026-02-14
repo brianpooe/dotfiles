@@ -84,6 +84,10 @@ vim.keymap.set('n', '<leader>qt', ':BufferLineCloseOthers<CR>', opts) -- close a
 -- Toggle line wrapping
 vim.keymap.set('n', '<leader>lw', '<cmd>set wrap!<CR>', opts)
 
+-- Line navigation (same motions as `0` and `$`)
+vim.keymap.set({ 'n', 'v', 'o' }, '<leader>gh', '0', opts)
+vim.keymap.set({ 'n', 'v', 'o' }, '<leader>gl', '$', opts)
+
 -- Move text up and down
 vim.keymap.set('n', '<A-j>', ':m .+1<CR>==', opts)
 vim.keymap.set('n', '<A-k>', ':m .-2<CR>==', opts)
