@@ -7,6 +7,19 @@ vim.lsp.handlers['workspace/diagnostic/refresh'] = function()
   return nil
 end
 
+local function hover_if_supported()
+  local bufnr = vim.api.nvim_get_current_buf()
+  for _, client in ipairs(vim.lsp.get_clients { bufnr = bufnr }) do
+    if client.server_capabilities and client.server_capabilities.hoverProvider then
+      vim.lsp.buf.hover { border = 'rounded' }
+      return
+    end
+  end
+end
+
+-- Avoid default `K` -> `man` behavior in buffers without LSP hover support.
+keymap.set('n', 'K', hover_if_supported, { silent = true, desc = 'LSP hover' })
+
 -- Disable semantic tokens for ts_ls so it does not override
 -- treesitter injection highlighting in Angular inline templates
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -68,21 +81,6 @@ vim.api.nvim_create_autocmd('LspAttach', {
     keymap.set('n', ']d', function()
       vim.diagnostic.jump { count = 1, float = true }
     end, opts) -- jump to next diagnostic in buffer
-
-    opts.desc = 'Show documentation for what is under cursor'
-    keymap.set('n', 'K', function()
-      local bufnr = vim.api.nvim_get_current_buf()
-      local has_hover = false
-      for _, client in ipairs(vim.lsp.get_clients { bufnr = bufnr }) do
-        if client.server_capabilities and client.server_capabilities.hoverProvider then
-          has_hover = true
-          break
-        end
-      end
-      if has_hover then
-        vim.lsp.buf.hover { border = 'rounded' }
-      end
-    end, opts)
 
     opts.desc = 'Scroll hover docs down'
     keymap.set('n', '<C-j>', function()
