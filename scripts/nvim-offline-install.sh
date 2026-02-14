@@ -33,10 +33,22 @@ if [ ! -f "$TARBALL" ]; then
     exit 1
 fi
 
-command -v rsync >/dev/null 2>&1 || {
-    error "rsync is required but not installed"
-    exit 1
+copy_tree() {
+    local src="$1"
+    local dst="$2"
+    rsync -a --delete "$src/" "$dst/"
 }
+
+if ! command -v rsync >/dev/null 2>&1; then
+    warn "rsync not found; using cp -a fallback."
+    copy_tree() {
+        local src="$1"
+        local dst="$2"
+        rm -rf "$dst"
+        mkdir -p "$dst"
+        cp -a "$src/." "$dst/"
+    }
+fi
 
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 NVIM_DATA="$XDG_DATA_HOME/nvim"
@@ -92,7 +104,7 @@ if [ -d "$SOURCE_LAZY" ]; then
     fi
 
     mkdir -p "$NVIM_DATA"
-    rsync -a --delete "$SOURCE_LAZY/" "$NVIM_DATA/lazy/"
+    copy_tree "$SOURCE_LAZY" "$NVIM_DATA/lazy"
 fi
 
 # ── Install Mason packages ─────────────────────────────────────────────────
@@ -109,7 +121,7 @@ if [ -d "$SOURCE_MASON" ]; then
         mv "$NVIM_DATA/mason" "$NVIM_DATA/mason.bak"
     fi
 
-    rsync -a --delete "$SOURCE_MASON/" "$NVIM_DATA/mason/"
+    copy_tree "$SOURCE_MASON" "$NVIM_DATA/mason"
 fi
 
 # ── Install lazy-lock.json ─────────────────────────────────────────────────

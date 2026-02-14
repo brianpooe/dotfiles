@@ -77,4 +77,8 @@ tags
 !.config/tmux/tmux-cheatsheet.md
 !.config/tmux/tmux.conf
 !.config/.vimrc
+
+scripts/nvim-offline-bundle-output
+
+.nvimlog
 # End of https://www.toptal.com/developers/gitignore/api/vim,macos

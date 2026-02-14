@@ -28,7 +28,6 @@ return {
         html = { 'prettierd', 'prettier', stop_after_first = true },
         htmlangular = { 'prettierd', 'prettier', stop_after_first = true },
         lua = { 'stylua' },
-        go = { 'goimports', 'ast_grep' },
         rust = { 'ast_grep' },
         python = { 'ruff', 'black' },
         dockerfile = { 'hadolint' },

@@ -1,8 +1,12 @@
 -- Highlight, edit, and navigate code
+local preparing = vim.env.NVIM_OFFLINE_PREPARE == '1'
+
 return {
   'nvim-treesitter/nvim-treesitter',
   branch = 'master',
-  build = ':TSUpdate',
+  -- During offline prepare we run TSUpdateSync explicitly from the script.
+  -- Skipping lazy build here prevents duplicate parser builds in later steps.
+  build = preparing and nil or ':TSUpdate',
   main = 'nvim-treesitter.configs',
   dependencies = {
     'nvim-treesitter/nvim-treesitter-textobjects',
@@ -24,7 +28,6 @@ return {
       'json',
       'java',
       'groovy',
-      'go',
       'gitignore',
       'graphql',
       'yaml',
@@ -38,7 +41,7 @@ return {
       'html',
       'rust',
     },
-    auto_install = not vim.g.offline_mode,
+    auto_install = not vim.g.offline_mode and not preparing,
     highlight = { enable = true },
     indent = { enable = true },
     incremental_selection = {

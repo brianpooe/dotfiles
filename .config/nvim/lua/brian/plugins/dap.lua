@@ -1,3 +1,6 @@
+local preparing = vim.env.NVIM_OFFLINE_PREPARE == '1'
+local dap_auto_install = not vim.g.offline_mode and not preparing
+
 return {
   'mfussenegger/nvim-dap',
   dependencies = {
@@ -49,9 +52,9 @@ return {
       dependencies = 'mason.nvim',
       cmd = { 'DapInstall', 'DapUninstall' },
       opts = {
-        automatic_installation = not vim.g.offline_mode,
+        automatic_installation = dap_auto_install,
         handlers = {},
-        ensure_installed = not vim.g.offline_mode and {
+        ensure_installed = dap_auto_install and {
           'python',
           'js',
           'codelldb',
