@@ -1,3 +1,5 @@
+local offline = vim.g.offline_mode or vim.env.NVIM_OFFLINE_PREPARE == '1'
+
 return {
   'saghen/blink.cmp',
   dependencies = {
@@ -63,7 +65,7 @@ return {
     -- when the Rust fuzzy matcher is not available, by using `implementation = "prefer_rust"`
     --
     -- See the fuzzy documentation for more information
-    fuzzy = { implementation = 'prefer_rust_with_warning' },
+    fuzzy = { implementation = offline and 'lua' or 'prefer_rust' },
   },
   opts_extend = { 'sources.default' },
 }

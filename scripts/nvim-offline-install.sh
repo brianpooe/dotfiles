@@ -39,6 +39,40 @@ copy_tree() {
     rsync -a --delete "$src/" "$dst/"
 }
 
+rewrite_mason_bin_wrappers() {
+    local mason_root="$1"
+    local bin_dir="$mason_root/bin"
+    local rewritten=0
+
+    if [ ! -d "$bin_dir" ]; then
+        return 0
+    fi
+
+    while IFS= read -r -d '' shim; do
+        # Skip binary executables; only rewrite text wrapper scripts.
+        if ! LC_ALL=C grep -Iq . "$shim"; then
+            continue
+        fi
+        if ! grep -q '/mason/packages/' "$shim"; then
+            continue
+        fi
+
+        local tmp
+        tmp="$(mktemp)"
+        local escaped_root="${mason_root//&/\\&}"
+        sed -E "s|/[^\"'[:space:]]*/mason/packages/|$escaped_root/packages/|g" "$shim" >"$tmp"
+
+        if ! cmp -s "$shim" "$tmp"; then
+            cat "$tmp" >"$shim"
+            chmod +x "$shim" || true
+            rewritten=$((rewritten + 1))
+        fi
+        rm -f "$tmp"
+    done < <(find "$bin_dir" -mindepth 1 -maxdepth 1 -type f -print0)
+
+    info "Rewrote $rewritten Mason wrapper(s) in $bin_dir"
+}
+
 if ! command -v rsync >/dev/null 2>&1; then
     warn "rsync not found; using cp -a fallback."
     copy_tree() {
@@ -122,6 +156,12 @@ if [ -d "$SOURCE_MASON" ]; then
     fi
 
     copy_tree "$SOURCE_MASON" "$NVIM_DATA/mason"
+    rewrite_mason_bin_wrappers "$NVIM_DATA/mason"
+
+    if grep -R -q '/tmp/runtime/share/nvim/mason/packages/' "$NVIM_DATA/mason/bin" 2>/dev/null; then
+        error "Stale Mason wrapper paths detected after rewrite. Aborting."
+        exit 1
+    fi
 fi
 
 # ── Install lazy-lock.json ─────────────────────────────────────────────────

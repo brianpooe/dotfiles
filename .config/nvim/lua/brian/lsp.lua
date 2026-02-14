@@ -1,5 +1,12 @@
 local keymap = vim.keymap -- for conciseness
 
+-- Some servers (e.g. vscode-langservers-extracted/css-lsp) send this request.
+-- Neovim may not provide a default handler in some setups, which causes noisy
+-- "MethodNotFound" logs from the server side. Treat as a no-op.
+vim.lsp.handlers['workspace/diagnostic/refresh'] = function()
+  return nil
+end
+
 -- Disable semantic tokens for ts_ls so it does not override
 -- treesitter injection highlighting in Angular inline templates
 vim.api.nvim_create_autocmd('LspAttach', {
@@ -64,7 +71,17 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     opts.desc = 'Show documentation for what is under cursor'
     keymap.set('n', 'K', function()
-      vim.lsp.buf.hover { border = 'rounded' }
+      local bufnr = vim.api.nvim_get_current_buf()
+      local has_hover = false
+      for _, client in ipairs(vim.lsp.get_clients { bufnr = bufnr }) do
+        if client.server_capabilities and client.server_capabilities.hoverProvider then
+          has_hover = true
+          break
+        end
+      end
+      if has_hover then
+        vim.lsp.buf.hover { border = 'rounded' }
+      end
     end, opts)
 
     opts.desc = 'Scroll hover docs down'
