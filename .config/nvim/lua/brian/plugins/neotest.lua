@@ -51,7 +51,7 @@ return {
       function()
         require('neotest').output_panel.toggle()
       end,
-      desc = 'Open test output panel',
+      desc = 'Toggle test output panel',
     },
     {
       '<leader>tS',
