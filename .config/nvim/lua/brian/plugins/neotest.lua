@@ -1,3 +1,9 @@
+local function run_with_output_panel(target)
+  local neotest = require 'neotest'
+  neotest.output_panel.open()
+  neotest.run.run(target)
+end
+
 return {
   'nvim-neotest/neotest',
   dependencies = {
@@ -8,27 +14,28 @@ return {
     -- Adapters
     'nvim-neotest/neotest-jest',
     'nvim-neotest/neotest-python',
+    'marilari88/neotest-vitest',
     -- Rust uses rustaceanvim's built-in neotest adapter
   },
   keys = {
     {
       '<leader>tt',
       function()
-        require('neotest').run.run()
+        run_with_output_panel()
       end,
       desc = 'Run nearest test',
     },
     {
       '<leader>tf',
       function()
-        require('neotest').run.run(vim.fn.expand '%')
+        run_with_output_panel(vim.fn.expand '%')
       end,
       desc = 'Run current file tests',
     },
     {
       '<leader>ta',
       function()
-        require('neotest').run.run(vim.uv.cwd())
+        run_with_output_panel(vim.uv.cwd())
       end,
       desc = 'Run all tests',
     },
@@ -42,9 +49,9 @@ return {
     {
       '<leader>to',
       function()
-        require('neotest').output.open { enter = true, auto_close = true }
+        require('neotest').output_panel.open()
       end,
-      desc = 'Show test output',
+      desc = 'Open test output panel',
     },
     {
       '<leader>tO',
@@ -70,7 +77,7 @@ return {
     {
       '<leader>td',
       function()
-        require('neotest').run.run { strategy = 'dap' }
+        run_with_output_panel { strategy = 'dap' }
       end,
       desc = 'Debug nearest test',
     },
@@ -106,12 +113,17 @@ return {
           runner = 'pytest',
         },
         require 'rustaceanvim.neotest',
+        require 'neotest-vitest',
       },
       status = {
-        virtual_text = true,
+        virtual_text = false,
       },
       output = {
-        open_on_run = true,
+        open_on_run = false,
+      },
+      output_panel = {
+        enabled = true,
+        open = 'botright split | resize 12',
       },
       quickfix = {
         open = function()

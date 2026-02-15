@@ -50,8 +50,8 @@ vim.keymap.set('n', 'n', 'nzzzv')
 vim.keymap.set('n', 'N', 'Nzzzv')
 
 -- Resize with arrows
-vim.keymap.set('n', '<Up>', ':resize -2<CR>', opts)
-vim.keymap.set('n', '<Down>', ':resize +2<CR>', opts)
+vim.keymap.set('n', '<Up>', ':resize +2<CR>', opts)
+vim.keymap.set('n', '<Down>', ':resize -2<CR>', opts)
 vim.keymap.set('n', '<Left>', ':vertical resize -2<CR>', opts)
 vim.keymap.set('n', '<Right>', ':vertical resize +2<CR>', opts)
 
@@ -77,6 +77,9 @@ vim.keymap.set('n', '<C-k>', ':wincmd k<CR>', opts)
 vim.keymap.set('n', '<C-j>', ':wincmd j<CR>', opts)
 vim.keymap.set('n', '<C-h>', ':wincmd h<CR>', opts)
 vim.keymap.set('n', '<C-l>', ':wincmd l<CR>', opts)
+vim.keymap.set('n', '<leader>wj', '<C-w>j', opts)
+vim.keymap.set('n', '<leader>wk', '<C-w>k', opts)
+vim.keymap.set('n', '<leader>wp', '<C-w>p', opts)
 
 -- Buffers
 vim.keymap.set('n', '<leader>qt', ':BufferLineCloseOthers<CR>', opts) -- close all buffers except current
