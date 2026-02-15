@@ -110,7 +110,7 @@ vim.keymap.set('n', '<leader>Y', [["+Y]])
 -- Toggle diagnostics
 local diagnostics_active = true
 
-vim.keymap.set('n', '<leader>do', function()
+vim.keymap.set('n', '<leader>ud', function()
   diagnostics_active = not diagnostics_active
 
   if diagnostics_active then
@@ -131,7 +131,7 @@ end, { desc = 'Go to next diagnostic message' })
 
 vim.keymap.set(
   'n',
-  '<leader>d',
+  '<leader>df',
   vim.diagnostic.open_float,
   { desc = 'Open floating diagnostic message' }
 )
