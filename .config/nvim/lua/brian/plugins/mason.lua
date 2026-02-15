@@ -94,10 +94,10 @@ return {
       -- skip auto-install when offline; packages are pre-installed
       -- during offline prepare we install LSP packages via MasonToolsInstallSync
       ensure_installed = auto_install and lsp_servers or {},
-      -- don't auto-enable rust_analyzer; rustaceanvim manages it
-      automatic_enable = {
-        exclude = { 'rust_analyzer' },
-      },
+      -- Only auto-enable the LSP servers we explicitly manage in this config.
+      -- This avoids accidental multi-server attaches (e.g. ts_ls + vtsls),
+      -- which can produce duplicate Telescope definition results.
+      automatic_enable = lsp_servers,
     },
     dependencies = {
       {
