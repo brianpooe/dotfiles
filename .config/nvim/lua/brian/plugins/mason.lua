@@ -82,10 +82,11 @@ local function filter_skips(list)
   return out
 end
 
-local prepare_tools = filter_skips(
-  dedupe(vim.list_extend(vim.deepcopy(tools), lsp_servers))
+local configured_mason_packages = dedupe(
+  vim.list_extend(vim.deepcopy(tools), lsp_servers)
 )
-local tool_installer_list = online and (preparing and prepare_tools or tools) or {}
+local prepare_tools = filter_skips(vim.deepcopy(configured_mason_packages))
+local tool_installer_list = preparing and prepare_tools or configured_mason_packages
 
 return {
   {
