@@ -18,7 +18,6 @@ local lsp_servers = {
   'angularls',
   'bashls',
   'cssls',
-  'denols',
   'docker_compose_language_service',
   'dockerls',
   'emmet_language_server',

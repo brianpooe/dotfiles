@@ -6,8 +6,9 @@ $fill\
 $bun\
 $lua\
 $nodejs\
-$golang\
+$python\
 $rust\
+$terraform\
 $docker_context\
 $jobs\
 $cmd_duration\
@@ -43,7 +44,7 @@ format = '([$all_status$ahead_behind]($style) )'
 symbol = ' '
 
 [bun]
-format = 'blue'
+style = 'blue'
 symbol = '🥟 '
 
 [lua]
@@ -54,13 +55,17 @@ symbol = ' '
 style = 'blue'
 symbol = ' '
 
-[golang]
-style = 'blue'
-symbol = ' '
+[python]
+style = 'yellow'
+symbol = ' '
 
 [rust]
 style = 'orange'
 symbol = ' '
+
+[terraform]
+style = 'purple'
+symbol = '󱁢 '
 
 [package]
 symbol = '󰏗 '
