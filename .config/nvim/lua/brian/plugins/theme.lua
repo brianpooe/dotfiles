@@ -1,3 +1,18 @@
+local function resolve_kanagawa_variant()
+  local value = (vim.env.NVIM_THEME or ''):lower()
+  local variants = {
+    wave = 'wave',
+    dragon = 'dragon',
+    lotus = 'lotus',
+    ['kanagawa-wave'] = 'wave',
+    ['kanagawa-dragon'] = 'dragon',
+    ['kanagawa-lotus'] = 'lotus',
+  }
+  return variants[value] or 'dragon'
+end
+
+local variant = resolve_kanagawa_variant()
+
 return {
   'rebelot/kanagawa.nvim',
   priority = 1000,
@@ -37,9 +52,9 @@ return {
         MasonNormal = { bg = 'none', fg = theme.ui.fg_dim },
       }
     end,
-    theme = 'wave', -- Set to dragon since you're using kanagawa-dragon
+    theme = variant,
     background = {
-      dark = 'wave',
+      dark = variant,
       light = 'lotus',
     },
   },

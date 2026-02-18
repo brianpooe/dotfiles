@@ -32,16 +32,17 @@ export FZF_ALT_C_OPTS="--preview 'eza --icons=always --tree --color=always {} | 
 export FZF_TMUX_OPTS=" -p90%,70% "
 # -----------------------------
 
-# Themes (onedark or nord)
-export TMUX_THEME="nord"
-export NVIM_THEME="nord"
-export STARSHIP_THEME="nord"
-export WEZTERM_THEME="nord"
+# Theme
+export TMUX_THEME="dragon"
+export NVIM_THEME="dragon"
+export STARSHIP_THEME="dragon"
+export WEZTERM_THEME="dragon"
 
+unalias lt 2>/dev/null
 lt() {
   local level=${1:-3}
   shift
-  eza --tree --level "$level" "$@"
+  eza --tree --all --level "$level" "$@"
 }
 
 # aliases
@@ -51,7 +52,6 @@ alias nvimconfig="vim ~/.config/nvim"
 alias dev="cd $HOME/Documents"
 alias ls="eza --no-filesize --long --color=always --icons=always --no-user"
 alias ll="eza -lah --group-directories-first --no-filesize --long --color=always --icons=always --no-user"
-alias lt="eza --tree --level"
 alias vim="nvim"
 alias crq="cargo run -q"
 

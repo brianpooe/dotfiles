@@ -65,6 +65,7 @@ tags
 !.config/karabiner/karabiner.json
 !.config/tmux/
 !.config/tmux/nord-theme.conf
+!.config/tmux/dragon-theme.conf
 !.config/tmux/tmux-cheatsheet.md
 !.config/tmux/tmux.conf
 !.config/.vimrc
@@ -74,6 +75,7 @@ tags
 !.config/karabiner/karabiner.json
 .config/tmux/**
 !.config/tmux/nord-theme.conf
+!.config/tmux/dragon-theme.conf
 !.config/tmux/tmux-cheatsheet.md
 !.config/tmux/tmux.conf
 !.config/.vimrc

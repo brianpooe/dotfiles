@@ -16,7 +16,7 @@ $line_break\
 $character"""
 
 add_newline = true
-palette = "nord"
+palette = "dragon"
 
 [directory]
 style = 'bold fg:dark_blue'
@@ -87,6 +87,19 @@ format = '[$symbol]($style)'
 min_time = 500
 style = 'fg:gray'
 format = '[$duration]($style)'
+
+[palettes.dragon]
+dark_blue = '#8ba4b0'
+blue = '#7e9cd8'
+teal = '#8ea4a2'
+red = '#c4746e'
+orange = '#b6927b'
+green = '#87a987'
+yellow = '#c4b28a'
+purple = '#a292a3'
+gray = '#727169'
+black = '#181616'
+white = '#c5c9c5'
 
 [palettes.nord]
 dark_blue = '#5E81AC'

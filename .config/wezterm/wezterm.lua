@@ -21,30 +21,67 @@ config.font_size = 15.5
 config.font = wezterm.font("JetBrains Mono", { weight = "Regular" })
 config.bold_brightens_ansi_colors = true
 config.force_reverse_video_cursor = true
--- Kanagawa Wave color scheme
-config.colors = {
-	foreground = "#dcd7ba",
-	background = "#1f1f28",
-	cursor_bg = "#c8c093",
-	cursor_fg = "#c8c093",
-	cursor_border = "#c8c093",
-	selection_fg = "#c8c093",
-	selection_bg = "#2d4f67",
-	scrollbar_thumb = "#16161d",
-	split = "#54546d",
-	ansi = {
-		"#090618", "#c34043", "#76946a", "#c0a36e",
-		"#7e9cd8", "#957fb8", "#6a9589", "#c8c093",
+local function resolve_theme_name()
+	local value = (os.getenv("WEZTERM_THEME") or "dragon"):lower()
+	local aliases = {
+		wave = "wave",
+		dragon = "dragon",
+		["kanagawa-wave"] = "wave",
+		["kanagawa-dragon"] = "dragon",
+	}
+	return aliases[value] or "dragon"
+end
+
+local themes = {
+	wave = {
+		foreground = "#dcd7ba",
+		background = "#1f1f28",
+		cursor_bg = "#c8c093",
+		cursor_fg = "#c8c093",
+		cursor_border = "#c8c093",
+		selection_fg = "#c8c093",
+		selection_bg = "#2d4f67",
+		scrollbar_thumb = "#16161d",
+		split = "#54546d",
+		ansi = {
+			"#090618", "#c34043", "#76946a", "#c0a36e",
+			"#7e9cd8", "#957fb8", "#6a9589", "#c8c093",
+		},
+		brights = {
+			"#727169", "#e82424", "#98bb6c", "#e6c384",
+			"#7fb4ca", "#938aa9", "#7aa89f", "#dcd7ba",
+		},
+		indexed = {
+			[16] = "#ffa066",
+			[17] = "#ff5d62",
+		},
 	},
-	brights = {
-		"#727169", "#e82424", "#98bb6c", "#e6c384",
-		"#7fb4ca", "#938aa9", "#7aa89f", "#dcd7ba",
-	},
-	indexed = {
-		[16] = "#ffa066",
-		[17] = "#ff5d62",
+	dragon = {
+		foreground = "#c5c9c5",
+		background = "#181616",
+		cursor_bg = "#c5c9c5",
+		cursor_fg = "#181616",
+		cursor_border = "#c5c9c5",
+		selection_fg = "#c5c9c5",
+		selection_bg = "#2d4f67",
+		scrollbar_thumb = "#12120f",
+		split = "#625e5a",
+		ansi = {
+			"#0d0c0c", "#c4746e", "#87a987", "#c4b28a",
+			"#8ba4b0", "#a292a3", "#8ea4a2", "#c5c9c5",
+		},
+		brights = {
+			"#727169", "#e46876", "#8a9a7b", "#c0a36e",
+			"#7fb4ca", "#938aa9", "#7aa89f", "#c5c9c5",
+		},
+		indexed = {
+			[16] = "#b6927b",
+			[17] = "#b98d7b",
+		},
 	},
 }
+
+config.colors = themes[resolve_theme_name()] or themes.dragon
 -- Window padding
 config.window_padding = {
 	left = 8,
