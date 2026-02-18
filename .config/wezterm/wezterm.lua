@@ -17,7 +17,7 @@ config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = false
 config.enable_tab_bar = false
 -- Font configuration
-config.font_size = 15.5
+config.font_size = 16
 config.font = wezterm.font("JetBrains Mono", { weight = "Regular" })
 config.bold_brightens_ansi_colors = true
 config.force_reverse_video_cursor = true
@@ -44,12 +44,24 @@ local themes = {
 		scrollbar_thumb = "#16161d",
 		split = "#54546d",
 		ansi = {
-			"#090618", "#c34043", "#76946a", "#c0a36e",
-			"#7e9cd8", "#957fb8", "#6a9589", "#c8c093",
+			"#090618",
+			"#c34043",
+			"#76946a",
+			"#c0a36e",
+			"#7e9cd8",
+			"#957fb8",
+			"#6a9589",
+			"#c8c093",
 		},
 		brights = {
-			"#727169", "#e82424", "#98bb6c", "#e6c384",
-			"#7fb4ca", "#938aa9", "#7aa89f", "#dcd7ba",
+			"#727169",
+			"#e82424",
+			"#98bb6c",
+			"#e6c384",
+			"#7fb4ca",
+			"#938aa9",
+			"#7aa89f",
+			"#dcd7ba",
 		},
 		indexed = {
 			[16] = "#ffa066",
@@ -67,12 +79,24 @@ local themes = {
 		scrollbar_thumb = "#12120f",
 		split = "#625e5a",
 		ansi = {
-			"#0d0c0c", "#c4746e", "#87a987", "#c4b28a",
-			"#8ba4b0", "#a292a3", "#8ea4a2", "#c5c9c5",
+			"#0d0c0c",
+			"#c4746e",
+			"#87a987",
+			"#c4b28a",
+			"#8ba4b0",
+			"#a292a3",
+			"#8ea4a2",
+			"#c5c9c5",
 		},
 		brights = {
-			"#727169", "#e46876", "#8a9a7b", "#c0a36e",
-			"#7fb4ca", "#938aa9", "#7aa89f", "#c5c9c5",
+			"#727169",
+			"#e46876",
+			"#8a9a7b",
+			"#c0a36e",
+			"#7fb4ca",
+			"#938aa9",
+			"#7aa89f",
+			"#c5c9c5",
 		},
 		indexed = {
 			[16] = "#b6927b",
@@ -90,11 +114,11 @@ config.window_padding = {
 	bottom = 8,
 }
 -- Window transparency and blur
-config.window_background_opacity = 0.85
+config.window_background_opacity = 0.80
 if is_macos then
 	config.macos_window_background_blur = 60
 end
-config.text_background_opacity = 0.85
+config.text_background_opacity = 0.80
 -- Performance
 config.scrollback_lines = 10000
 config.enable_scroll_bar = false
