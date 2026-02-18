@@ -1,5 +1,24 @@
+# Theme (kanagawa variants: dragon|wave)
+# Example: export KANAGAWA_THEME="wave"
+export KANAGAWA_THEME="${KANAGAWA_THEME:-dragon}"
+case "${KANAGAWA_THEME:l}" in
+  wave|kanagawa-wave)
+    export TMUX_THEME="wave"
+    export NVIM_THEME="wave"
+    export STARSHIP_THEME="wave"
+    export WEZTERM_THEME="wave"
+    export STARSHIP_CONFIG="$HOME/.config/starship/starship-wave.toml"
+    ;;
+  *)
+    export TMUX_THEME="dragon"
+    export NVIM_THEME="dragon"
+    export STARSHIP_THEME="dragon"
+    export WEZTERM_THEME="dragon"
+    export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
+    ;;
+esac
+
 # Starship
-export STARSHIP_CONFIG="$HOME/.config/starship/starship.toml"
 eval "$(starship init zsh)"
 
 # zoxide - a better cd command
@@ -31,12 +50,6 @@ export FZF_ALT_C_OPTS="--preview 'eza --icons=always --tree --color=always {} | 
 # fzf preview for tmux
 export FZF_TMUX_OPTS=" -p90%,70% "
 # -----------------------------
-
-# Theme
-export TMUX_THEME="dragon"
-export NVIM_THEME="dragon"
-export STARSHIP_THEME="dragon"
-export WEZTERM_THEME="dragon"
 
 unalias lt 2>/dev/null
 lt() {
