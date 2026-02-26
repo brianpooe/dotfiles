@@ -1,6 +1,6 @@
 # Theme (kanagawa variants: dragon|wave)
 # Example: export KANAGAWA_THEME="wave"
-export KANAGAWA_THEME="${KANAGAWA_THEME:-dragon}"
+export KANAGAWA_THEME="wave"
 case "${KANAGAWA_THEME:l}" in
   wave|kanagawa-wave)
     export TMUX_THEME="wave"

@@ -7,6 +7,15 @@ end
 local target_triple = wezterm.target_triple or ""
 local is_macos = target_triple:find("apple%-darwin") ~= nil
 local is_windows = target_triple:find("windows") ~= nil
+
+local function env_number(name, fallback)
+	local raw = os.getenv(name)
+	local parsed = raw and tonumber(raw) or nil
+	if parsed == nil then
+		return fallback
+	end
+	return parsed
+end
 -- Basic settings
 config.automatically_reload_config = true
 config.window_close_confirmation = "NeverPrompt"
@@ -17,10 +26,18 @@ config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = false
 config.enable_tab_bar = false
 -- Font configuration
-config.font_size = 16
+local default_font_size = is_windows and 13 or 16
+config.font_size = tonumber(os.getenv("WEZTERM_FONT_SIZE") or default_font_size)
 config.font = wezterm.font("JetBrains Mono", { weight = "Regular" })
 config.bold_brightens_ansi_colors = true
 config.force_reverse_video_cursor = true
+if is_windows then
+	-- Windows GPUs/drivers can show transient render artifacts with the default
+	-- backend. OpenGL is generally more stable here.
+	config.front_end = "OpenGL"
+	-- Reverse video cursor occasionally leaves visual artifacts on Windows.
+	config.force_reverse_video_cursor = false
+end
 local function resolve_theme_name()
 	local value = (os.getenv("WEZTERM_THEME") or "dragon"):lower()
 	local aliases = {
@@ -114,11 +131,17 @@ config.window_padding = {
 	bottom = 8,
 }
 -- Window transparency and blur
-config.window_background_opacity = 0.80
+local default_opacity = is_windows and 1.0 or 0.80
+config.window_background_opacity = env_number("WEZTERM_WINDOW_OPACITY", default_opacity)
 if is_macos then
 	config.macos_window_background_blur = 60
 end
-config.text_background_opacity = 0.80
+config.text_background_opacity = env_number("WEZTERM_TEXT_OPACITY", default_opacity)
+if is_windows then
+	-- Disable transparency on Windows to avoid compositor repaint glitches.
+	config.window_background_opacity = 1.0
+	config.text_background_opacity = 1.0
+end
 -- Performance
 config.scrollback_lines = 10000
 config.enable_scroll_bar = false
