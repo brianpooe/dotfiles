@@ -166,10 +166,12 @@ set background=dark
 " hi VertSplit guibg=NONE guifg=NONE ctermbg=NONE ctermfg=NONE
 
 " Sync clipboard with OS
-if system('uname -s') == "Darwin\n"
-  set clipboard=unnamed "OSX
+if has('win32') || has('win64')
+  set clipboard=unnamedplus " Windows
+elseif has('macunix')
+  set clipboard=unnamed " macOS
 else
-  set clipboard=unnamedplus "Linux
+  set clipboard=unnamedplus " Linux/WSL
 endif
 
 " True colors
@@ -177,7 +179,9 @@ if !has('gui_running') && &term =~ '\%(screen\|tmux\)'
   let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
   let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
 endif
-set termguicolors
+if has('termguicolors')
+  set termguicolors
+endif
 
 " Use a line cursor within insert mode and a block cursor everywhere else.
 let &t_SI = "\e[6 q"
@@ -193,4 +197,3 @@ let g:netrw_winsize = 25
 augroup netrw_setup | au!
     au FileType netrw nmap <buffer> l <CR>
 augroup END
-
