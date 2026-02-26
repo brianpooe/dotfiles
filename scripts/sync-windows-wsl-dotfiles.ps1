@@ -83,6 +83,42 @@ function Sync-File {
     Copy-Item -LiteralPath $Source -Destination $Target -Force
 }
 
+function Normalize-WslLineEndings {
+    param(
+        [string]$DistroName,
+        [string]$UserName
+    )
+
+    # Normalize LF endings for files consumed inside WSL. This avoids tmux/zsh
+    # parse issues when source files were checked out with CRLF on Windows.
+    $script = @'
+set -eu
+sanitize() {
+  f="$1"
+  [ -f "$f" ] || return 0
+  sed -i "s/\r$//" "$f"
+}
+
+sanitize "$HOME/.zshrc"
+sanitize "$HOME/.vimrc"
+
+for d in "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/starship"; do
+  [ -d "$d" ] || continue
+  find "$d" -type f \( -name "*.lua" -o -name "*.toml" -o -name "*.conf" -o -name "*.vim" -o -name "*.vimrc" -o -name "*.sh" -o -name "*.zsh" \) -exec sed -i "s/\r$//" {} +
+done
+'@
+
+    Write-Step "Normalizing line endings in WSL targets (LF)"
+    if ($DryRun) {
+        return
+    }
+
+    & wsl.exe -d $DistroName -u $UserName -e sh -lc $script
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to normalize line endings in WSL (exit code $LASTEXITCODE)"
+    }
+}
+
 if (-not $WslUser) {
     $WslUser = Resolve-WslUser -DistroName $Distro
 }
@@ -133,7 +169,9 @@ foreach ($dir in $configDirs) {
 }
 
 Sync-File -Source (Join-Path $RepoRoot ".zshrc") -Target (Join-Path $wslHome ".zshrc")
+Sync-File -Source (Join-Path $RepoRoot ".tmux.conf") -Target (Join-Path $wslHome ".tmux.conf")
 Sync-File -Source (Join-Path $repoConfigRoot ".vimrc") -Target (Join-Path $wslHome ".vimrc")
 Sync-File -Source (Join-Path $repoConfigRoot "wezterm\wezterm.lua") -Target $WindowsWeztermPath
+Normalize-WslLineEndings -DistroName $Distro -UserName $WslUser
 
 Write-Step "Done."
