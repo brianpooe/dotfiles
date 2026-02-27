@@ -27,16 +27,14 @@ config.tab_bar_at_bottom = false
 config.enable_tab_bar = false
 -- Font configuration
 local default_font_size = is_windows and 13 or 16
-config.font_size = tonumber(os.getenv("WEZTERM_FONT_SIZE") or default_font_size)
+config.font_size = env_number("WEZTERM_FONT_SIZE", default_font_size)
 config.font = wezterm.font("JetBrains Mono", { weight = "Regular" })
 config.bold_brightens_ansi_colors = true
-config.force_reverse_video_cursor = true
+config.force_reverse_video_cursor = false
 if is_windows then
 	-- Windows GPUs/drivers can show transient render artifacts with the default
 	-- backend. OpenGL is generally more stable here.
 	config.front_end = "OpenGL"
-	-- Reverse video cursor occasionally leaves visual artifacts on Windows.
-	config.force_reverse_video_cursor = false
 end
 local function resolve_theme_name()
 	local value = (os.getenv("WEZTERM_THEME") or "dragon"):lower()
@@ -136,7 +134,9 @@ config.window_background_opacity = env_number("WEZTERM_WINDOW_OPACITY", default_
 if is_macos then
 	config.macos_window_background_blur = 60
 end
-config.text_background_opacity = env_number("WEZTERM_TEXT_OPACITY", default_opacity)
+-- Keep text cells opaque by default; transparent text backgrounds can show
+-- grid/dot artifacts on some GPU/compositor combinations.
+config.text_background_opacity = env_number("WEZTERM_TEXT_OPACITY", 1.0)
 if is_windows then
 	-- Disable transparency on Windows to avoid compositor repaint glitches.
 	config.window_background_opacity = 1.0
