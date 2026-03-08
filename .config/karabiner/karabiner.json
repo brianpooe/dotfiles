@@ -35,20 +35,14 @@
             ]
           },
           {
-            "description": "Remap Caps Lock to Ctrl when held, Esc when tapped",
+            "description": "Remap Caps Lock to Escape",
             "manipulators": [
               {
                 "from": {
                   "key_code": "caps_lock",
                   "modifiers": { "optional": ["any"] }
                 },
-                "to": [
-                  {
-                    "key_code": "left_control",
-                    "lazy": true
-                  }
-                ],
-                "to_if_alone": [{ "key_code": "escape" }],
+                "to": [{ "key_code": "escape" }],
                 "type": "basic"
               }
             ]
