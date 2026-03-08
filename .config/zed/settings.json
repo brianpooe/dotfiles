@@ -12,7 +12,7 @@
     },
 
     "vim_mode": true,
-  "base_keymap": "None",
+  "base_keymap": "JetBrains",
 
     "auto_install_extensions": {
         "html": true,
@@ -30,7 +30,7 @@
     "theme": {
         "mode": "dark",
         "light": "Kanagawa Lotus",
-        "dark": "Kanagawa Dragon",
+        "dark": "Monokai-og",
     },
 
     "ui_font_size": 16,
