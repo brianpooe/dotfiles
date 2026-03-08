@@ -18,7 +18,7 @@ function Write-Step {
 
 function Resolve-WslUser {
     param([string]$DistroName)
-    $value = (& wsl.exe -d $DistroName -e sh -lc 'whoami' 2>$null | Select-Object -First 1)
+    $value = (& wsl.exe -d $DistroName -e sh -c 'whoami' 2>$null | Select-Object -First 1)
     if (-not $value) {
         throw "Unable to resolve WSL user from distro '$DistroName'. Pass -WslUser explicitly."
     }
@@ -90,7 +90,7 @@ function Normalize-WslLineEndings {
     )
 
     # Normalize LF endings for files consumed inside WSL. Keep this as a
-    # single-line command string to avoid CRLF/BOM parsing issues in sh -lc.
+    # single-line command string to avoid CRLF/BOM parsing issues in sh -c.
     $script = 'set -eu; sanitize(){ f="$1"; [ -f "$f" ] || return 0; sed -i "s/\r$//" "$f"; }; sanitize "$HOME/.zshrc"; sanitize "$HOME/.vimrc"; for d in "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/starship"; do [ -d "$d" ] || continue; find "$d" -type f \( -name "*.lua" -o -name "*.toml" -o -name "*.conf" -o -name "*.vim" -o -name "*.vimrc" -o -name "*.sh" -o -name "*.zsh" \) -exec sed -i "s/\r$//" {} +; done'
 
     Write-Step "Normalizing line endings in WSL targets (LF)"
@@ -98,7 +98,7 @@ function Normalize-WslLineEndings {
         return
     }
 
-    & wsl.exe -d $DistroName -u $UserName -e sh -lc $script
+    & wsl.exe -d $DistroName -u $UserName -e sh -c $script
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to normalize line endings in WSL (exit code $LASTEXITCODE)"
     }
