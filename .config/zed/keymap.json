@@ -1,0 +1,95 @@
+// Zed keymap
+//
+// This carries over the Neovim shortcuts that map cleanly onto Zed.
+// Leader mappings use Zed's Vim mode sequence support.
+[
+  {
+    "context": "Editor && !menu && vim_mode == normal",
+    "bindings": {
+      "ctrl-s": "workspace::SaveAll",
+      "ctrl-q": "pane::CloseActiveItem",
+      "tab": "pane::ActivateNextItem",
+      "shift-tab": "pane::ActivatePreviousItem",
+      "ctrl-h": "vim::ToggleProjectPanelFocus",
+      "ctrl-j": "workspace::ActivatePaneDown",
+      "ctrl-k": "workspace::ActivatePaneUp",
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "shift-k": "editor::Hover",
+      "alt-j": "editor::MoveLineDown",
+      "alt-k": "editor::MoveLineUp",
+      "[ d": "editor::GoToPreviousDiagnostic",
+      "] d": "editor::GoToDiagnostic",
+      "g d": "editor::GoToDefinition",
+      "g i": "editor::GoToImplementation",
+      "g t": "editor::GoToTypeDefinition",
+      "g shift-d": "editor::GoToDeclaration",
+      "g shift-r": "editor::FindAllReferences"
+    }
+  },
+  {
+    "context": "ProjectPanel",
+    "bindings": {
+      "ctrl-h": "project_panel::ToggleFocus",
+      "ctrl-l": "project_panel::ToggleFocus",
+      "o": "project_panel::Open"
+    }
+  },
+  {
+    "context": "Editor && !menu && vim_mode == visual",
+    "bindings": {
+      "alt-j": "editor::MoveLineDown",
+      "alt-k": "editor::MoveLineUp",
+      "space c a": "editor::ToggleCodeActions",
+      "space s t": "editor::SortLinesCaseSensitive",
+      "space ~": "editor::ToggleCase"
+    }
+  },
+  {
+    "context": "Editor && !menu && vim_mode == normal",
+    "bindings": {
+      "space space": "tab_switcher::Toggle",
+      "space /": "buffer_search::Deploy",
+      "space b": "workspace::NewFile",
+      "space c a": "editor::ToggleCodeActions",
+      "space c f": "editor::Format",
+      "space d b": "editor::ToggleBreakpoint",
+      "space d c": "debugger::Continue",
+      "space d f": "editor::Hover",
+      "space d i": "debugger::StepInto",
+      "space d o": "debugger::StepOut",
+      "space d p": "debugger::Pause",
+      "space d r": "debugger::Rerun",
+      "space d shift-o": "debugger::StepOver",
+      "space d t": "debugger::Stop",
+      "space d u": "debug_panel::ToggleFocus",
+      "space e": "project_panel::ToggleFocus",
+      "space h": "pane::SplitHorizontal",
+      "space l g": "git_panel::ToggleFocus",
+      "space l w": "editor::ToggleSoftWrap",
+      "space m p": "editor::Format",
+      "space q": "diagnostics::Deploy",
+      "space r n": "editor::Rename",
+      "space r s": "editor::RestartLanguageServer",
+      "space s /": "workspace::NewSearch",
+      "space s a": "workspace::SaveAll",
+      "space s b": "tab_switcher::Toggle",
+      "space s d": "diagnostics::Deploy",
+      "space s d s": "project_symbols::Toggle",
+      "space s f": "file_finder::Toggle",
+      "space s g": "workspace::NewSearch",
+      "space s n": "workspace::SaveWithoutFormat",
+      "space shift-d": "diagnostics::DeployCurrentFile",
+      "space t o": "terminal_panel::ToggleFocus",
+      "space t r": "task::Rerun",
+      "space t s": "zed::OpenTasks",
+      "space t t": "editor::SpawnNearestTask",
+      "space u d": "editor::ToggleInlineDiagnostics",
+      "space v": "pane::SplitVertical",
+      "space w h": "workspace::ActivatePaneLeft",
+      "space w j": "workspace::ActivatePaneDown",
+      "space w k": "workspace::ActivatePaneUp",
+      "space w l": "workspace::ActivatePaneRight",
+      "space x": "pane::CloseActiveItem"
+    }
+  }
+]

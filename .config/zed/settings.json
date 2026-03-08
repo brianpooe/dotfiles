@@ -1,0 +1,177 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// This translates the main Neovim behaviors from `.config/nvim` into
+// the Zed features that have direct equivalents.
+{
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false
+  },
+
+  "vim_mode": true,
+  "base_keymap": "JetBrains",
+
+  "auto_install_extensions": {
+    "html": true,
+    "angular": true,
+    "lua": true,
+    "sql": true,
+    "kanagawa-themes": true
+  },
+
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Zed (Default)",
+    "dark": "Zed (Default)"
+  },
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "Kanagawa Dragon"
+  },
+
+  "ui_font_size": 16,
+  "buffer_font_size": 15,
+
+  "gutter": {
+    "line_numbers": true,
+    "breakpoints": true,
+    "folds": true,
+    "min_line_number_digits": 4
+  },
+  "relative_line_numbers": "enabled",
+  "soft_wrap": "none",
+  "show_wrap_guides": false,
+  "tab_size": 4,
+  "hard_tabs": false,
+  "vertical_scroll_margin": 4,
+  "horizontal_scroll_margin": 8,
+  "use_smartcase_search": true,
+  "show_whitespaces": "selection",
+  "hover_popover_delay": 300,
+  "auto_signature_help": true,
+  "remove_trailing_whitespace_on_save": true,
+  "format_on_save": "on",
+
+  "diagnostics_max_severity": null,
+  "diagnostics": {
+    "inline": {
+      "enabled": false
+    }
+  },
+  "inlay_hints": {
+    "enabled": true,
+    "show_type_hints": true,
+    "show_parameter_hints": true,
+    "show_other_hints": true,
+    "show_background": false
+  },
+
+  "git": {
+    "git_gutter": "tracked_files",
+    "inline_blame": {
+      "enabled": false
+    }
+  },
+
+  "tabs": {
+    "file_icons": true,
+    "git_status": true,
+    "show_close_button": "always",
+    "show_diagnostics": "all"
+  },
+  "project_panel": {
+    "default_width": 320,
+    "git_status": true,
+    "show_diagnostics": "all",
+    "hide_hidden": false,
+    "auto_reveal_entries": true,
+    "indent_guides": {
+      "show": "always"
+    }
+  },
+  "toolbar": {
+    "breadcrumbs": true,
+    "quick_actions": true,
+    "selections_menu": true,
+    "code_actions": true
+  },
+
+  "file_types": {
+    "Groovy": [
+      "**/*.pipeline",
+      "**/*.multibranch"
+    ],
+    "Terraform": [
+      "**/*.tfvars"
+    ]
+  },
+
+  "languages": {
+    "JavaScript": {
+      "language_servers": [
+        "typescript-language-server",
+        "!vtsls",
+        "..."
+      ]
+    },
+    "TypeScript": {
+      "language_servers": [
+        "typescript-language-server",
+        "!vtsls",
+        "..."
+      ]
+    },
+    "TSX": {
+      "language_servers": [
+        "typescript-language-server",
+        "!vtsls",
+        "..."
+      ]
+    },
+    "Lua": {
+      "formatter": {
+        "external": {
+          "command": "stylua",
+          "arguments": [
+            "--respect-ignores",
+            "--stdin-filepath",
+            "{buffer_path}",
+            "-"
+          ]
+        }
+      }
+    },
+    "Python": {
+      "formatter": {
+        "external": {
+          "command": "ruff",
+          "arguments": [
+            "format",
+            "--stdin-filename",
+            "{buffer_path}",
+            "-"
+          ]
+        }
+      }
+    },
+    "Shell Script": {
+      "tab_size": 4,
+      "hard_tabs": false,
+      "formatter": {
+        "external": {
+          "command": "shfmt",
+          "arguments": [
+            "--filename",
+            "{buffer_path}",
+            "--indent",
+            "4"
+          ]
+        }
+      }
+    }
+  }
+}
