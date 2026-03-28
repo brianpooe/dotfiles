@@ -99,6 +99,7 @@ alias ll="eza -lah --group-directories-first --no-filesize --long --color=always
 alias vim="nvim"
 alias crq="cargo run -q"
 alias sudo="sudo "
+alias lg="lazygit"
 if command -v apt >/dev/null 2>&1; then
   alias update="sudo apt update && sudo apt upgrade -y"
 elif command -v brew >/dev/null 2>&1; then
