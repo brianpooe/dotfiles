@@ -73,6 +73,7 @@ tags
 !.config/tmux/tmux-cheatsheet.md
 !.config/tmux/tmux.conf
 !.config/.vimrc
+!.config/.ideavimrc
 
 # Ignore subfolders in karabiner and tmux
 .config/karabiner/**
@@ -84,6 +85,7 @@ tags
 !.config/tmux/tmux-cheatsheet.md
 !.config/tmux/tmux.conf
 !.config/.vimrc
+!.config/.ideavimrc
 
 scripts/nvim-offline-bundle-output
 

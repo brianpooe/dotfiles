@@ -11,7 +11,15 @@ This script runs in Windows PowerShell and syncs:
 - `nvim`, `tmux`, `starship` -> `\\wsl.localhost\<distro>\home\<user>\.config`
 - `.zshrc` -> `\\wsl.localhost\<distro>\home\<user>\.zshrc`
 - `.config/.vimrc` -> `\\wsl.localhost\<distro>\home\<user>\.vimrc`
+- `.config/.ideavimrc` -> `\\wsl.localhost\<distro>\home\<user>\.ideavimrc`
 - `.config/wezterm/wezterm.lua` -> Windows WezTerm config path
+
+On macOS/Linux, JetBrains reads IdeaVim config from `~/.ideavimrc`. You can
+symlink it to this repo-managed file:
+
+```bash
+ln -sfn ~/dotfiles/.config/.ideavimrc ~/.ideavimrc
+```
 
 ### Run From Windows PowerShell
 

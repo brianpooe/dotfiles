@@ -1,0 +1,44 @@
+" ========================================
+" Shared Vim-safe defaults
+" ========================================
+
+let mapleader = " "
+let maplocalleader = " "
+
+set incsearch
+set hlsearch
+set ignorecase
+set smartcase
+set scrolloff=8
+set clipboard+=unnamedplus,ideaput
+
+" ========================================
+" IdeaVim-only mappings and plugins
+" ========================================
+
+if has('ide')
+  " Required for NvimTree-like project navigation in JetBrains.
+  " Install IdeaVim + NERDTree support from JetBrains Marketplace.
+  set NERDTree
+
+  " Optional IdeaVim extensions (enable when installed).
+  " set which-key
+  " set surround
+  " set commentary
+
+  " Keep split navigation muscle memory from Neovim.
+  nnoremap <C-h> <C-w>h
+  nnoremap <C-l> <C-w>l
+  nnoremap <C-j> <C-w>j
+  nnoremap <C-k> <C-w>k
+
+  " Tree toggle (NvimTree equivalent workflow).
+  map <leader>e :NERDTree<CR>
+
+  " Fast jump to files/buffers using JetBrains actions.
+  " Use :actionlist and "Track Action IDs" to refine per IDE/version.
+  map <leader>sf <Action>(GotoFile)
+  map <leader><leader> <Action>(Switcher)
+  map <leader>sb <Action>(Switcher)
+  map <leader>sg <Action>(FindInPath)
+endif

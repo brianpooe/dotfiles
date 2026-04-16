@@ -91,7 +91,7 @@ function Normalize-WslLineEndings {
 
     # Normalize LF endings for files consumed inside WSL. Keep this as a
     # single-line command string to avoid CRLF/BOM parsing issues in sh -c.
-    $script = 'set -eu; sanitize(){ f="$1"; [ -f "$f" ] || return 0; sed -i "s/\r$//" "$f"; }; sanitize "$HOME/.zshrc"; sanitize "$HOME/.vimrc"; for d in "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/starship"; do [ -d "$d" ] || continue; find "$d" -type f \( -name "*.lua" -o -name "*.toml" -o -name "*.conf" -o -name "*.vim" -o -name "*.vimrc" -o -name "*.sh" -o -name "*.zsh" \) -exec sed -i "s/\r$//" {} +; done'
+    $script = 'set -eu; sanitize(){ f="$1"; [ -f "$f" ] || return 0; sed -i "s/\r$//" "$f"; }; sanitize "$HOME/.zshrc"; sanitize "$HOME/.vimrc"; sanitize "$HOME/.ideavimrc"; for d in "$HOME/.config/nvim" "$HOME/.config/tmux" "$HOME/.config/starship"; do [ -d "$d" ] || continue; find "$d" -type f \( -name "*.lua" -o -name "*.toml" -o -name "*.conf" -o -name "*.vim" -o -name "*.vimrc" -o -name "*.sh" -o -name "*.zsh" \) -exec sed -i "s/\r$//" {} +; done'
 
     Write-Step "Normalizing line endings in WSL targets (LF)"
     if ($DryRun) {
@@ -156,6 +156,7 @@ foreach ($dir in $configDirs) {
 Sync-File -Source (Join-Path $RepoRoot ".zshrc") -Target (Join-Path $wslHome ".zshrc")
 Sync-File -Source (Join-Path $RepoRoot ".tmux.conf") -Target (Join-Path $wslHome ".tmux.conf")
 Sync-File -Source (Join-Path $repoConfigRoot ".vimrc") -Target (Join-Path $wslHome ".vimrc")
+Sync-File -Source (Join-Path $repoConfigRoot ".ideavimrc") -Target (Join-Path $wslHome ".ideavimrc")
 Sync-File -Source (Join-Path $repoConfigRoot "wezterm\wezterm.lua") -Target $WindowsWeztermPath
 Normalize-WslLineEndings -DistroName $Distro -UserName $WslUser
 
