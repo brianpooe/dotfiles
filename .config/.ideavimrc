@@ -1,44 +1,217 @@
-" ========================================
-" Shared Vim-safe defaults
-" ========================================
+" ============================================================
+" .ideavimrc — IdeaVim configuration
+" Mirrors the Neovim setup in lua/brian/
+" See docs/ideavimrc.md for the full migration reference.
+"
+" All IDE actions use :action <ID><CR> instead of <Action>(ID).
+" Both are documented by IdeaVim but <Action>() in a mapping RHS
+" can silently fall through and type the text literally.
+" ============================================================
 
+" ============================================================
+" sethandler — MUST be at top level before any mappings.
+" IdeaVim processes these in a separate startup phase; putting
+" them inside an if block causes them to be silently ignored,
+" which makes C-h/C-l fire random IDE actions unpredictably.
+" ============================================================
+sethandler <C-h> a:vim
+sethandler <C-l> a:vim
+sethandler <C-j> a:vim
+sethandler <C-k> a:vim
+sethandler <C-s> a:vim
+sethandler <C-d> a:vim
+sethandler <C-u> a:vim
+
+" ============================================================
+" Leader
+" ============================================================
 let mapleader = " "
 let maplocalleader = " "
 
+" ============================================================
+" Core options
+" IdeaVim does not support indentation options (shiftwidth,
+" tabstop, expandtab, smartindent) — configure those under
+" Settings → Editor → Code Style in the IDE.
+" ============================================================
+set number
+set relativenumber
+set scrolloff=4
+set sidescrolloff=8
 set incsearch
 set hlsearch
 set ignorecase
 set smartcase
-set scrolloff=8
+set nowrap
 set clipboard+=unnamedplus,ideaput
+set timeoutlen=300
 
-" ========================================
-" IdeaVim-only mappings and plugins
-" ========================================
+" ============================================================
+" IdeaVim plugin emulation
+"
+" which-key : install "IdeaVim-Which-Key" from Marketplace first
+" easymotion: install "IdeaVim-EasyMotion" from Marketplace first
+" ============================================================
+set NERDTree
+set surround
+set commentary
+set highlightedyank
+set argtextobj
+set matchit
+" set which-key        " uncomment after installing IdeaVim-Which-Key
+" set easymotion       " uncomment after installing IdeaVim-EasyMotion
 
-if has('ide')
-  " Required for NvimTree-like project navigation in JetBrains.
-  " Install IdeaVim + NERDTree support from JetBrains Marketplace.
-  set NERDTree
+" ============================================================
+" NvimTree-style navigation
+"
+" <C-h>  focus the Project tool window (file tree)
+" <C-l>  focus the editor — no panels opened or closed
+" <leader>e  toggle the tree panel
+" ============================================================
+nnoremap <C-h> :action ActivateProjectToolWindow<CR>
+nnoremap <C-l> :action FocusEditor<CR>
+nnoremap <leader>e :NERDTree<CR>
 
-  " Optional IdeaVim extensions (enable when installed).
-  " set which-key
-  " set surround
-  " set commentary
+" ============================================================
+" Split navigation  (mirrors keymaps.lua C-hjkl wincmd)
+" ============================================================
+nnoremap <C-k> <C-w>k
+nnoremap <C-j> <C-w>j
+nnoremap <leader>wh <C-w>h
+nnoremap <leader>wl <C-w>l
+nnoremap <leader>wj <C-w>j
+nnoremap <leader>wk <C-w>k
+nnoremap <leader>wp <C-w>p
 
-  " Keep split navigation muscle memory from Neovim.
-  nnoremap <C-h> <C-w>h
-  nnoremap <C-l> <C-w>l
-  nnoremap <C-j> <C-w>j
-  nnoremap <C-k> <C-w>k
+nnoremap <leader>v  :action SplitVertically<CR>
+nnoremap <leader>h  :action SplitHorizontally<CR>
+nnoremap <leader>se :action ChangeSplitOrientation<CR>
+nnoremap <leader>xs :action Unsplit<CR>
 
-  " Tree toggle (NvimTree equivalent workflow).
-  map <leader>e :NERDTree<CR>
+" ============================================================
+" File / buffer / search   (Telescope equivalents)
+" ============================================================
+nnoremap <leader>sf  :action GotoFile<CR>
+nnoremap <leader><leader> :action Switcher<CR>
+nnoremap <leader>sb  :action Switcher<CR>
+nnoremap <leader>sg  :action FindInPath<CR>
+nnoremap <leader>so  :action RecentFiles<CR>
+nnoremap <leader>sds :action FileStructurePopup<CR>
+nnoremap <leader>sw  :action FindUsages<CR>
+nnoremap <leader>sd  :action ActivateProblemsViewToolWindow<CR>
+nnoremap <leader>sm  :action ShowBookmarks<CR>
+nnoremap <leader>/   :action Find<CR>
 
-  " Fast jump to files/buffers using JetBrains actions.
-  " Use :actionlist and "Track Action IDs" to refine per IDE/version.
-  map <leader>sf <Action>(GotoFile)
-  map <leader><leader> <Action>(Switcher)
-  map <leader>sb <Action>(Switcher)
-  map <leader>sg <Action>(FindInPath)
-endif
+" ============================================================
+" LSP equivalents  (mirrors lua/brian/lsp.lua)
+" ============================================================
+nnoremap gd  :action GotoDeclaration<CR>
+nnoremap gD  :action GotoDeclaration<CR>
+nnoremap gi  :action GotoImplementation<CR>
+nnoremap gR  :action FindUsages<CR>
+nnoremap gt  :action GotoTypeDeclaration<CR>
+nnoremap K   :action QuickJavaDoc<CR>
+
+nnoremap <leader>ca :action ShowIntentionActions<CR>
+nnoremap <leader>rn :action RenameElement<CR>
+nnoremap <leader>D  :action ActivateProblemsViewToolWindow<CR>
+nnoremap <leader>df :action ShowErrorDescription<CR>
+nnoremap <leader>rs :action RestartIde<CR>
+
+nnoremap [d :action GotoPreviousError<CR>
+nnoremap ]d :action GotoNextError<CR>
+
+" ============================================================
+" Tab / buffer management
+"
+" <Tab> is NOT mapped to NextTab — Tab == C-i in terminal,
+" which is the jumplist-forward key. Use gt / gT natively.
+" ============================================================
+nnoremap <leader>x  :action CloseContent<CR>
+nnoremap <leader>qt :action CloseAllEditorsButActive<CR>
+
+" ============================================================
+" Git  (mirrors lazygit + telescope git pickers)
+" ============================================================
+nnoremap <leader>lg  :action ActivateVersionControlToolWindow<CR>
+nnoremap <leader>gc  :action Vcs.ShowTabbedFileHistory<CR>
+nnoremap <leader>gcf :action Annotate<CR>
+nnoremap <leader>gb  :action Git.Branches<CR>
+nnoremap <leader>gs  :action Vcs.Show.Shelf<CR>
+nnoremap <leader>gf  :action GotoFile<CR>
+
+" ============================================================
+" Angular component file switching
+" GotoRelatedFile opens a popup: .ts / .html / .scss / .spec.ts
+" Requires the Angular plugin to be installed.
+" ============================================================
+nnoremap <leader>ot :action GotoRelatedFile<CR>
+nnoremap <leader>oh :action GotoRelatedFile<CR>
+nnoremap <leader>oc :action GotoRelatedFile<CR>
+nnoremap <leader>os :action GotoRelatedFile<CR>
+
+" ============================================================
+" Save / quit
+" ============================================================
+nnoremap <C-s>      :action SaveAll<CR>
+nnoremap <leader>sa :action SaveAll<CR>
+nnoremap <C-q>      :action CloseContent<CR>
+
+" ============================================================
+" Pure-vim mappings — identical behaviour in nvim and IdeaVim
+" ============================================================
+
+" Disable accidental space movement
+nnoremap <Space> <Nop>
+vnoremap <Space> <Nop>
+
+" Clear search highlights
+nnoremap <Esc> :noh<CR>
+
+" Vertical scroll and center
+nnoremap <C-d> <C-d>zz
+nnoremap <C-u> <C-u>zz
+
+" Find next/prev and center
+nnoremap n nzzzv
+nnoremap N Nzzzv
+
+" Delete without yanking
+nnoremap x "_x
+nnoremap dd "_dd
+
+" Keep yank register when pasting over selection
+vnoremap p "_dP
+
+" Move lines up/down
+nnoremap <A-j> :m .+1<CR>==
+nnoremap <A-k> :m .-2<CR>==
+vnoremap <A-j> :m '>+1<CR>gv=gv
+vnoremap <A-k> :m '<-2<CR>gv=gv
+
+" Replace word under cursor (forward)
+nnoremap <leader>j *``cgn
+
+" Yank to system clipboard explicitly
+nnoremap <leader>y "+y
+vnoremap <leader>y "+y
+nnoremap <leader>Y "+Y
+
+" Line start/end shortcuts
+nnoremap <leader>gh 0
+vnoremap <leader>gh 0
+nnoremap <leader>gl $
+vnoremap <leader>gl $
+
+" Toggle line wrap
+nnoremap <leader>lw :set wrap!<CR>
+
+" Increment / decrement
+nnoremap <leader>+ <C-a>
+nnoremap <leader>- <C-x>
+
+" Sort selected lines (unique)
+vnoremap <leader>st :sort u<CR>
+
+" Toggle case of selection
+vnoremap <leader>~ g~
