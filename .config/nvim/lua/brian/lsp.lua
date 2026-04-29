@@ -1,10 +1,12 @@
 local keymap = vim.keymap -- for conciseness
 
 -- Some servers (e.g. vscode-langservers-extracted/css-lsp) send this request.
--- Neovim may not provide a default handler in some setups, which causes noisy
--- "MethodNotFound" logs from the server side. Treat as a no-op.
-vim.lsp.handlers['workspace/diagnostic/refresh'] = function()
-  return nil
+-- On newer Neovim versions this handler exists by default; keep it intact.
+-- On older setups, provide a no-op fallback that still replies to the server.
+if not vim.lsp.handlers['workspace/diagnostic/refresh'] then
+  vim.lsp.handlers['workspace/diagnostic/refresh'] = function()
+    return vim.NIL
+  end
 end
 
 local function hover_if_supported()

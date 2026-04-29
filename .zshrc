@@ -27,6 +27,8 @@ case "${KANAGAWA_THEME:l}" in
     ;;
 esac
 
+source /opt/homebrew/opt/antidote/share/antidote/antidote.zsh
+
 # Write a deterministic tmux theme selector file so tmux servers don't depend
 # on inherited shell env vars.
 export TMUX_THEME_FILE="$HOME/.config/tmux/current-theme.conf"
