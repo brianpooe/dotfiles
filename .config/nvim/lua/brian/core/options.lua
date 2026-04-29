@@ -45,3 +45,18 @@ vim.opt.runtimepath:remove '/usr/share/vim/vimfiles' -- separate vim plugins fro
 -- Offline mode: set NVIM_OFFLINE=1 to disable all network operations
 -- (plugin update checks, Mason auto-install, Treesitter auto-install)
 vim.g.offline_mode = vim.env.NVIM_OFFLINE == '1'
+
+-- Neovim 0.12 changed directive captures from TSNode to TSNode[] (arrays).
+-- nvim-treesitter predicates do match[capture_id] expecting a single TSNode,
+-- but now receive a table. The nil guard passes, then get_node_text calls
+-- node:range(true) on a plain table which has no range method and crashes.
+-- Unwrap the array so nvim-treesitter keeps working until it is patched upstream.
+local _get_node_text = vim.treesitter.get_node_text
+vim.treesitter.get_node_text = function(node, source, opts)
+  if not node then return '' end
+  if type(node) == 'table' then
+    node = node[1]
+    if not node then return '' end
+  end
+  return _get_node_text(node, source, opts)
+end
